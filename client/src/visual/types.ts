@@ -39,6 +39,9 @@ export type HandGesturePhase =
 export interface HandTrackingDiagnostics {
   model: HandMirrorStatus;
   inferenceFps: number;
+  inferenceMs: number;
+  sampleAgeMs: number;
+  backgroundInference: boolean;
   detectedHandCount: number;
   rawHandedness: string;
   mappedHands: string;

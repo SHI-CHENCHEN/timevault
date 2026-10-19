@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useRef, useState, type MutableRefObject, type RefObject } from "react";
-import { FilesetResolver, HandLandmarker, type HandLandmarkerResult, type NormalizedLandmark } from "@mediapipe/tasks-vision";
+import type { HandLandmarkerResult, NormalizedLandmark } from "@mediapipe/tasks-vision";
 import type { ReflectionStep } from "@timevault/shared";
 import { createHandMirrorVisualState, type HandMirrorStatus, type HandMirrorVisualState, type HandSimulatorState, type HandTrackingDiagnostics } from "../visual/types";
 import { inspectHandModelBundle } from "./handModelAsset";
 import { acquireSessionResource, cameraErrorIssue, cameraSupportIssue, type CameraIssue } from "./handCameraRuntime";
 import { advanceGestureMachine, createGestureMachineState, deriveHandMetrics, mapMediaPipeHandedness, projectCameraPoint, type CameraViewport, type GestureMachineState, type HandMetrics } from "./handTrackingMath";
+import { createHandDetector, type HandDetector } from "./handInferenceRuntime";
+import { HAND_SAMPLE_INTERVAL_MS, HandFramePacer, isFreshHandSample, palmSmoothingMs, smoothHandValue } from "./handTrackingTiming";
 
 export interface HandMirrorUiSummary {
   leftDetected: boolean;
@@ -67,6 +69,9 @@ const DEFAULT_SIMULATOR: HandSimulatorState = {
 const DEFAULT_DIAGNOSTICS: HandTrackingDiagnostics = {
   model: "CAMERA_OFF",
   inferenceFps: 0,
+  inferenceMs: 0,
+  sampleAgeMs: 0,
+  backgroundInference: false,
   detectedHandCount: 0,
   rawHandedness: "—",
   mappedHands: "—",
@@ -93,8 +98,6 @@ const DEFAULT_DIAGNOSTICS: HandTrackingDiagnostics = {
 const HAND_MODEL_VERSION = "float16-1-20261008b";
 const HAND_MODEL_PATH = `${import.meta.env.BASE_URL}models/hand_landmarker.task?v=${HAND_MODEL_VERSION}`;
 const MEDIAPIPE_WASM_PATH = `${import.meta.env.BASE_URL}mediapipe`;
-const DETECTION_INTERVAL_MS = 52;
-const smooth = (current: number, target: number, amount: number) => current + (target - current) * amount;
 const clamp = (value: number, min = -3, max = 3) => Math.min(max, Math.max(min, value));
 
 async function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
@@ -151,7 +154,7 @@ export function useHandTracking({ reflectionActive, reflectionStep, onReflection
   const cameraViewportRef = useRef<CameraViewport | undefined>(undefined);
   const visualRef = useRef<HandMirrorVisualState>(createHandMirrorVisualState());
   const streamRef = useRef<MediaStream | null>(null);
-  const landmarkerRef = useRef<HandLandmarker | null>(null);
+  const landmarkerRef = useRef<HandDetector | null>(null);
   const frameRef = useRef<number | null>(null);
   const runIdRef = useRef(0);
   const activeRef = useRef(reflectionActive);
@@ -160,8 +163,7 @@ export function useHandTracking({ reflectionActive, reflectionStep, onReflection
   const videoFrameRef = useRef<number | null>(null);
   const watchdogRef = useRef<number | null>(null);
   const trackCleanupRef = useRef<(() => void) | null>(null);
-  const lastDetectAtRef = useRef(0);
-  const lastVideoTimeRef = useRef(-1);
+  const timingRef = useRef({ inferenceMs: 0, sampleAgeMs: 0, backgroundInference: false });
   const lastUiAtRef = useRef(0);
   const stepRef = useRef(reflectionStep);
   const onStepRef = useRef(onReflectionStep);
@@ -216,6 +218,7 @@ export function useHandTracking({ reflectionActive, reflectionStep, onReflection
     Object.assign(visual, { active: false, leftDetected: false, rightDetected: false, leftRepelStrength: 0, leftConfidence: 0, rightConfidence: 0, leftVelocityX: 0, leftVelocityY: 0, rightVelocityX: 0, rightVelocityY: 0, motionEnergy: 0 });
     fillDebug(visual.debugLeft);
     fillDebug(visual.debugRight);
+    previousHandsRef.current.left.at = 0; previousHandsRef.current.right.at = 0;
     if (updateUi) {
       setEnabled(false);
       setUi(DEFAULT_UI);
@@ -228,24 +231,30 @@ export function useHandTracking({ reflectionActive, reflectionStep, onReflection
 
   const applyHands = useCallback((hands: NormalizedHand[], now: number, simulatorActive = false) => {
     const visual = visualRef.current;
+    const sampleElapsed = visual.updatedAt ? now - visual.updatedAt : HAND_SAMPLE_INTERVAL_MS;
+    const smooth = (from: number, to: number, tau = 40) => smoothHandValue(from, to, sampleElapsed, tau);
     const left = hands.find((hand) => hand.side === "LEFT") ?? null;
     const right = hands.find((hand) => hand.side === "RIGHT") ?? null;
     const applyHand = (hand: NormalizedHand, side: "left" | "right") => {
       const previous = previousHandsRef.current[side];
-      const elapsed = Math.max(0.03, Math.min(0.18, (now - previous.at) / 1000 || 0.052));
-      const velocityX = simulatorActive ? simulatorRef.current[`${side}VelocityX`] : clamp((hand.metrics.palmX - previous.x) / elapsed);
-      const velocityY = simulatorActive ? simulatorRef.current[`${side}VelocityY`] : clamp((hand.metrics.palmY - previous.y) / elapsed);
+      const acquired = !previous.at || now - previous.at > 300;
+      const elapsedMs = acquired ? HAND_SAMPLE_INTERVAL_MS : Math.max(1, now - previous.at);
+      const elapsed = Math.max(0.016, Math.min(0.2, elapsedMs / 1000));
+      const velocityX = simulatorActive ? simulatorRef.current[`${side}VelocityX`] : acquired ? 0 : clamp((hand.metrics.palmX - previous.x) / elapsed);
+      const velocityY = simulatorActive ? simulatorRef.current[`${side}VelocityY`] : acquired ? 0 : clamp((hand.metrics.palmY - previous.y) / elapsed);
+      const palmTau = palmSmoothingMs(Math.hypot(hand.metrics.palmX - previous.x, hand.metrics.palmY - previous.y));
+      const follow = (from: number, to: number, tau = 40) => acquired ? to : smoothHandValue(from, to, elapsedMs, tau);
       previousHandsRef.current[side] = { x: hand.metrics.palmX, y: hand.metrics.palmY, at: now };
       if (side === "left") {
         Object.assign(visual, {
           leftDetected: true,
-          leftPalmX: smooth(visual.leftPalmX, hand.metrics.palmX, 0.34),
-          leftPalmY: smooth(visual.leftPalmY, hand.metrics.palmY, 0.34),
-          leftRepelStrength: smooth(visual.leftRepelStrength, hand.score, 0.28),
-          leftPinch: smooth(visual.leftPinch, hand.metrics.pinch, 0.3),
-          leftVelocityX: smooth(visual.leftVelocityX, velocityX, 0.3),
-          leftVelocityY: smooth(visual.leftVelocityY, velocityY, 0.3),
-          leftPalmSize: smooth(visual.leftPalmSize, hand.metrics.palmSize, 0.24),
+          leftPalmX: follow(visual.leftPalmX, hand.metrics.palmX, palmTau),
+          leftPalmY: follow(visual.leftPalmY, hand.metrics.palmY, palmTau),
+          leftRepelStrength: smooth(visual.leftRepelStrength, hand.score, 55),
+          leftPinch: follow(visual.leftPinch, hand.metrics.pinch),
+          leftVelocityX: follow(visual.leftVelocityX, velocityX, 55),
+          leftVelocityY: follow(visual.leftVelocityY, velocityY, 55),
+          leftPalmSize: follow(visual.leftPalmSize, hand.metrics.palmSize, 65),
           leftConfidence: hand.score,
           leftFingerCount: hand.metrics.fingerCount,
         });
@@ -253,15 +262,15 @@ export function useHandTracking({ reflectionActive, reflectionStep, onReflection
       } else {
         Object.assign(visual, {
           rightDetected: true,
-          rightOpenness: smooth(visual.rightOpenness, hand.metrics.openness, 0.24),
-          rightFist: smooth(visual.rightFist, hand.metrics.fist, 0.24),
-          rightRotation: smooth(visual.rightRotation, hand.metrics.rotation, 0.2),
-          rightPalmX: smooth(visual.rightPalmX, hand.metrics.palmX, 0.3),
-          rightPalmY: smooth(visual.rightPalmY, hand.metrics.palmY, 0.3),
-          rightPinch: smooth(visual.rightPinch, hand.metrics.pinch, 0.3),
-          rightVelocityX: smooth(visual.rightVelocityX, velocityX, 0.3),
-          rightVelocityY: smooth(visual.rightVelocityY, velocityY, 0.3),
-          rightPalmSize: smooth(visual.rightPalmSize, hand.metrics.palmSize, 0.24),
+          rightOpenness: follow(visual.rightOpenness, hand.metrics.openness),
+          rightFist: follow(visual.rightFist, hand.metrics.fist),
+          rightRotation: follow(visual.rightRotation, hand.metrics.rotation),
+          rightPalmX: follow(visual.rightPalmX, hand.metrics.palmX, palmTau),
+          rightPalmY: follow(visual.rightPalmY, hand.metrics.palmY, palmTau),
+          rightPinch: follow(visual.rightPinch, hand.metrics.pinch),
+          rightVelocityX: follow(visual.rightVelocityX, velocityX, 55),
+          rightVelocityY: follow(visual.rightVelocityY, velocityY, 55),
+          rightPalmSize: follow(visual.rightPalmSize, hand.metrics.palmSize, 65),
           rightConfidence: hand.score,
         });
         fillDebug(visual.debugRight, hand.landmarks, cameraViewportRef.current);
@@ -269,18 +278,18 @@ export function useHandTracking({ reflectionActive, reflectionStep, onReflection
     };
     if (left) applyHand(left, "left");
     else {
-      Object.assign(visual, { leftDetected: false, leftRepelStrength: smooth(visual.leftRepelStrength, 0, 0.08), leftConfidence: 0, leftVelocityX: smooth(visual.leftVelocityX, 0, 0.14), leftVelocityY: smooth(visual.leftVelocityY, 0, 0.14), leftFingerCount: 0 });
+      Object.assign(visual, { leftDetected: false, leftRepelStrength: smooth(visual.leftRepelStrength, 0, 180), leftConfidence: 0, leftVelocityX: smooth(visual.leftVelocityX, 0, 120), leftVelocityY: smooth(visual.leftVelocityY, 0, 120), leftFingerCount: 0 });
       fillDebug(visual.debugLeft);
     }
     if (right) applyHand(right, "right");
     else {
-      Object.assign(visual, { rightDetected: false, rightOpenness: smooth(visual.rightOpenness, 0.48, 0.07), rightFist: smooth(visual.rightFist, 0.52, 0.07), rightConfidence: 0, rightVelocityX: smooth(visual.rightVelocityX, 0, 0.14), rightVelocityY: smooth(visual.rightVelocityY, 0, 0.14) });
+      Object.assign(visual, { rightDetected: false, rightOpenness: smooth(visual.rightOpenness, 0.48, 220), rightFist: smooth(visual.rightFist, 0.52, 220), rightConfidence: 0, rightVelocityX: smooth(visual.rightVelocityX, 0, 120), rightVelocityY: smooth(visual.rightVelocityY, 0, 120) });
       fillDebug(visual.debugRight);
     }
     const gestureResult = advanceGestureMachine(gestureRef.current, { detected: Boolean(left && left.score >= 0.56), fingerCount: left?.metrics.fingerCount ?? 0 }, now, stepRef.current);
     gestureRef.current = gestureResult.state;
     if (gestureResult.commit !== null) onStepRef.current(gestureResult.commit);
-    visual.motionEnergy = smooth(visual.motionEnergy, Math.min(1, (Math.hypot(visual.leftVelocityX, visual.leftVelocityY) + Math.hypot(visual.rightVelocityX, visual.rightVelocityY)) / 2.7), 0.22);
+    visual.motionEnergy = smooth(visual.motionEnergy, Math.min(1, (Math.hypot(visual.leftVelocityX, visual.leftVelocityY) + Math.hypot(visual.rightVelocityX, visual.rightVelocityY)) / 2.7), 65);
     visual.updatedAt = now;
     visual.active = true;
     if (hands.length) lastValidDetectionAtRef.current = Date.now();
@@ -291,15 +300,19 @@ export function useHandTracking({ reflectionActive, reflectionStep, onReflection
       fpsRef.current.startedAt = now;
       fpsRef.current.frames = 0;
     }
-    if (now - lastUiAtRef.current < 150) return;
+    if (now - lastUiAtRef.current < 250) return;
     lastUiAtRef.current = now;
     const rightMode = visual.rightOpenness >= 0.62 ? "DISPERSE" : visual.rightOpenness <= 0.33 ? "GATHER" : "NEUTRAL";
     const fieldMode = visual.leftDetected && visual.rightDetected ? "TIME_FILAMENT" : visual.leftDetected ? "PUSH" : visual.rightDetected && visual.rightPinch >= 0.46 ? "PULL" : "AMBIENT";
-    setUi({ leftDetected: visual.leftDetected, leftFingerCount: visual.leftFingerCount, rightDetected: visual.rightDetected, rightMode, fieldMode });
+    const nextUi: HandMirrorUiSummary = { leftDetected: visual.leftDetected, leftFingerCount: visual.leftFingerCount, rightDetected: visual.rightDetected, rightMode, fieldMode };
+    setUi(current => current.leftDetected === nextUi.leftDetected && current.leftFingerCount === nextUi.leftFingerCount && current.rightDetected === nextUi.rightDetected && current.rightMode === rightMode && current.fieldMode === fieldMode ? current : nextUi);
     const bestHand = left ?? right;
     setDiagnostics({
       model: statusRef.current,
-      inferenceFps: simulatorActive ? 20 : fpsRef.current.value,
+      inferenceFps: fpsRef.current.value,
+      inferenceMs: simulatorActive ? 0 : timingRef.current.inferenceMs,
+      sampleAgeMs: simulatorActive ? 0 : timingRef.current.sampleAgeMs,
+      backgroundInference: !simulatorActive && timingRef.current.backgroundInference,
       detectedHandCount: hands.length,
       rawHandedness: hands.map((hand) => hand.raw).join(" / ") || "—",
       mappedHands: hands.map((hand) => hand.side).join(" / ") || "—",
@@ -364,7 +377,7 @@ export function useHandTracking({ reflectionActive, reflectionStep, onReflection
     const current = () => runId === runIdRef.current && activeRef.current;
     const assertCurrent = () => { if (!current()) throw new Error("SESSION_CANCELLED"); };
     const abort = new AbortController(); abortRef.current = abort;
-    lastDetectAtRef.current = 0; lastVideoTimeRef.current = -1; lastUiAtRef.current = 0;
+    lastUiAtRef.current = 0;
     fpsRef.current = { startedAt: performance.now(), frames: 0, value: 0 };
     previousHandsRef.current.left.at = 0; previousHandsRef.current.right.at = 0;
     setEnabled(true);
@@ -372,7 +385,7 @@ export function useHandTracking({ reflectionActive, reflectionStep, onReflection
     updateStatus("REQUESTING_CAMERA");
     try {
       const openCamera = async () => {
-        try { return await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 24 } } }); }
+        try { return await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30, max: 30 } } }); }
         catch (error) {
           if (error && typeof error === "object" && "name" in error && error.name === "OverconstrainedError" && current()) return navigator.mediaDevices.getUserMedia({ audio: false, video: true });
           throw error;
@@ -407,24 +420,9 @@ export function useHandTracking({ reflectionActive, reflectionStep, onReflection
       const bundle = inspectHandModelBundle(modelAssetBuffer);
       if (!bundle.valid) throw new Error(`LOCAL HAND MODEL IS INVALID (${bundle.reason})`);
       setDetail("INITIALIZING MEDIAPIPE / LOCAL");
-      const vision = await withTimeout(FilesetResolver.forVisionTasks(MEDIAPIPE_WASM_PATH), 15_000, "MEDIAPIPE WASM TIMED OUT");
-      assertCurrent();
-      const createDetector = (delegate: "GPU" | "CPU") => acquireSessionResource(HandLandmarker.createFromOptions(vision, {
-        baseOptions: { modelAssetBuffer, delegate },
-        runningMode: "VIDEO",
-        numHands: 2,
-        minHandDetectionConfidence: 0.5,
-        minHandPresenceConfidence: 0.5,
-        minTrackingConfidence: 0.5,
-      }), 25_000, "HAND MODEL INITIALIZATION TIMED OUT", current, value => value.close());
-      let landmarker: HandLandmarker;
-      try { landmarker = await createDetector("GPU"); assertCurrent(); setRuntime("GPU"); }
-      catch (error) {
-        assertCurrent();
-        if (error instanceof Error && /TIMED OUT/.test(error.message)) throw error;
-        setDetail("GPU UNAVAILABLE / STARTING COMPATIBLE CPU MODE");
-        landmarker = await createDetector("CPU"); assertCurrent(); setRuntime("CPU");
-      }
+      const landmarker = await acquireSessionResource(createHandDetector(modelAssetBuffer, new URL(MEDIAPIPE_WASM_PATH, window.location.href).href, abort.signal), 40_000, "HAND MODEL INITIALIZATION TIMED OUT", current, value => value.close());
+      assertCurrent(); setRuntime(landmarker.delegate);
+      timingRef.current = { inferenceMs: 0, sampleAgeMs: 0, backgroundInference: landmarker.background };
       landmarkerRef.current = landmarker;
       gestureRef.current = createGestureMachineState(performance.now());
       visualRef.current.active = true;
@@ -432,6 +430,9 @@ export function useHandTracking({ reflectionActive, reflectionStep, onReflection
       updateStatus("SEARCHING_FOR_HANDS");
       startingRef.current = false;
       let lastFrameAt = performance.now();
+      const pacer = new HandFramePacer();
+      let warmedUp = false;
+      let frameEpoch = 0;
       const fail = (error: unknown) => {
         if (!current()) return;
         releaseResources(false); setEnabled(false); setShowPreview(false);
@@ -439,26 +440,42 @@ export function useHandTracking({ reflectionActive, reflectionStep, onReflection
       };
       const ended = () => fail(new Error("CAMERA VIDEO TRACK ENDED"));
       stream.getVideoTracks().forEach(track => track.addEventListener("ended", ended));
-      trackCleanupRef.current = () => stream.getVideoTracks().forEach(track => track.removeEventListener("ended", ended));
+      const visibilityChanged = () => {
+        frameEpoch++;
+        lastFrameAt = performance.now();
+        gestureRef.current = createGestureMachineState(lastFrameAt);
+        previousHandsRef.current.left.at = 0; previousHandsRef.current.right.at = 0;
+        if (document.hidden) applyHands([], lastFrameAt);
+      };
+      document.addEventListener("visibilitychange", visibilityChanged);
+      trackCleanupRef.current = () => {
+        stream.getVideoTracks().forEach(track => track.removeEventListener("ended", ended));
+        document.removeEventListener("visibilitychange", visibilityChanged);
+      };
       const schedule = () => {
         if (!current()) return;
         if (video.requestVideoFrameCallback) videoFrameRef.current = video.requestVideoFrameCallback(now => detect(now));
         else frameRef.current = window.requestAnimationFrame(detect);
       };
-      const detect = (now: number) => {
+      const detect = (_frameTime: number) => {
         if (!current()) return;
         schedule();
-        if (document.hidden || now - lastDetectAtRef.current < DETECTION_INTERVAL_MS) return;
-        if (video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA || video.currentTime === lastVideoTimeRef.current) return;
-        lastDetectAtRef.current = now;
-        lastVideoTimeRef.current = video.currentTime;
+        if (document.hidden || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) return;
+        const now = performance.now();
+        if (!pacer.begin(now, video.currentTime)) return;
         lastFrameAt = now;
-        try {
-          applyResult(landmarker.detectForVideo(video, now), now);
-          if (now >= gestureRef.current.warmupUntil) setDetail(null);
-        } catch (error) {
-          fail(error);
-        }
+        const epoch = frameEpoch;
+        // One in-flight frame only. Skip arriving frames while busy instead of
+        // queuing work that would make the field follow the past.
+        void landmarker.detect(video, now).then(detection => {
+          pacer.complete(detection.inferenceMs, landmarker.background);
+          if (!current() || document.hidden || epoch !== frameEpoch) return;
+          const receivedAt = performance.now();
+          timingRef.current = { inferenceMs: detection.inferenceMs, sampleAgeMs: receivedAt - detection.capturedAt, backgroundInference: landmarker.background };
+          if (!isFreshHandSample(detection.capturedAt, receivedAt)) { applyHands([], receivedAt); return; }
+          applyResult(detection.result, detection.capturedAt);
+          if (!warmedUp && receivedAt >= gestureRef.current.warmupUntil) { warmedUp = true; setDetail(null); }
+        }).catch(fail);
       };
       watchdogRef.current = window.setInterval(() => {
         if (document.hidden) { lastFrameAt = performance.now(); return; }
@@ -472,7 +489,7 @@ export function useHandTracking({ reflectionActive, reflectionStep, onReflection
       setFailure(cameraErrorIssue(error)); setDetail(null); setShowPreview(false);
       updateStatus("CAMERA_UNAVAILABLE");
     }
-  }, [applyResult, enabled, reflectionActive, releaseResources, updateStatus]);
+  }, [applyHands, applyResult, enabled, reflectionActive, releaseResources, updateStatus]);
 
   useEffect(() => {
     if (!simulator.enabled || !reflectionActive) return;
@@ -488,7 +505,7 @@ export function useHandTracking({ reflectionActive, reflectionStep, onReflection
       if (current.leftDetected) hands.push({ side: "LEFT", raw: "SIM LEFT", score: current.confidence, metrics: simulatedMetrics(current, "LEFT") });
       if (current.rightDetected) hands.push({ side: "RIGHT", raw: "SIM RIGHT", score: current.confidence, metrics: simulatedMetrics(current, "RIGHT") });
       applyHands(hands, performance.now(), true);
-    }, DETECTION_INTERVAL_MS);
+    }, HAND_SAMPLE_INTERVAL_MS);
     return () => window.clearInterval(interval);
   }, [applyHands, reflectionActive, releaseResources, simulator.enabled, updateStatus]);
 

@@ -105,6 +105,8 @@ export function DeveloperPanel({
           {Object.entries({
             MODEL: handMirror.diagnostics.model,
             "INFERENCE FPS": handMirror.diagnostics.inferenceFps,
+            "INFERENCE / FRAME AGE": `${Math.round(handMirror.diagnostics.inferenceMs)} / ${Math.round(handMirror.diagnostics.sampleAgeMs)} MS`,
+            "INFERENCE THREAD": handMirror.diagnostics.backgroundInference ? "BACKGROUND WORKER" : "COMPATIBILITY / MAIN",
             HANDS: handMirror.diagnostics.detectedHandCount,
             "RAW / MAPPED": `${handMirror.diagnostics.rawHandedness} → ${handMirror.diagnostics.mappedHands}`,
             CONFIDENCE: handMirror.diagnostics.confidence.toFixed(2),

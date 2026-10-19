@@ -34,6 +34,7 @@ export class GestureParticleField {
   private readonly coreTargets: Float32Array;
   private readonly disperseTargets: Float32Array;
   private readonly colors: Float32Array;
+  private readonly motionSeeds: Float32Array;
   private readonly positionAttribute: THREE.BufferAttribute;
   private readonly colorAttribute: THREE.BufferAttribute;
   private readonly count: number;
@@ -55,6 +56,7 @@ export class GestureParticleField {
   private targetKey = "";
   private disposed = false;
   private readonly leftTrail = new Float32Array(12 * 5);
+  private readonly activeTrails = new Float32Array(12 * 5);
   private leftTrailCursor = 0;
   private lastTrailAt = -Infinity;
 
@@ -68,11 +70,22 @@ export class GestureParticleField {
     this.coreTargets = new Float32Array(count * 3);
     this.disperseTargets = new Float32Array(count * 3);
     this.colors = new Float32Array(count * 3);
+    this.motionSeeds = new Float32Array(count * 6);
     for (let index = 0; index < count; index += 1) {
       const offset = index * 3;
       this.positions[offset] = (hash(index + 1) - 0.5) * 3.8;
       this.positions[offset + 1] = (hash(index + 2) - 0.5) * 2.2;
       this.positions[offset + 2] = (hash(index + 3) - 0.5) * 0.7;
+      // These hashes do not depend on a hand or time. Compute once, not up to
+      // 72,000 times per animation frame while the detector is also running.
+      const seed = index * 6;
+      const t = hash(index * 1.913 + 311);
+      this.motionSeeds[seed] = t;
+      this.motionSeeds[seed + 1] = hash(index + 313) * 2.4;
+      this.motionSeeds[seed + 2] = Math.sin(t * Math.PI) * (hash(index + 314) - 0.18);
+      this.motionSeeds[seed + 3] = (hash(index + 315) - 0.5) * 0.13;
+      this.motionSeeds[seed + 4] = hash(index + 17) * 0.5;
+      this.motionSeeds[seed + 5] = 0.08 + hash(index + 19) * 0.12;
     }
     this.positionAttribute = new THREE.BufferAttribute(this.positions, 3).setUsage(THREE.DynamicDrawUsage);
     this.colorAttribute = new THREE.BufferAttribute(this.colors, 3).setUsage(THREE.DynamicDrawUsage);
@@ -151,11 +164,19 @@ export class GestureParticleField {
     const leftPalmY = (0.5 - hand.leftPalmY) * this.viewportHeight;
     const rightPalmX = (hand.rightPalmX - 0.5) * this.viewportWidth;
     const rightPalmY = (0.5 - hand.rightPalmY) * this.viewportHeight;
-    const leftStrength = hand.active && hand.leftDetected ? hand.leftRepelStrength : 0;
+    const leftStrength = hand.active ? hand.leftRepelStrength : 0;
     const rightStrength = hand.active && hand.rightDetected ? 1.05 : 0;
     const spring = this.reducedMotion ? 8.2 : 7.1;
     const damping = this.reducedMotion ? 0.82 : 0.87 - hand.motionEnergy * 0.025;
     const count = this.visibleCount;
+    const filamentDx = rightPalmX - leftPalmX;
+    const filamentDy = rightPalmY - leftPalmY;
+    const filamentLength = Math.max(0.01, Math.hypot(filamentDx, filamentDy));
+    const normalX = -filamentDy / filamentLength;
+    const normalY = filamentDx / filamentLength;
+    const ribbonWidth = 0.018 + (1 - Math.max(hand.leftPinch, hand.rightPinch)) * 0.055 + hand.motionEnergy * 0.035;
+    const arcScale = 0.12 + hand.motionEnergy * 0.16;
+    const disperseAngle = now * 0.00004 * (0.3 + disperseWeight);
 
     if (leftStrength > 0.05 && now - this.lastTrailAt > 42) {
       const trailOffset = this.leftTrailCursor * 5;
@@ -166,6 +187,21 @@ export class GestureParticleField {
       this.leftTrail[trailOffset + 4] = 0.34 + hand.leftPalmSize * 0.58 + hand.motionEnergy * 0.16;
       this.leftTrailCursor = (this.leftTrailCursor + 1) % 12;
       this.lastTrailAt = now;
+    }
+
+    let trailCount = 0;
+    for (let index = 0; index < 12; index += 1) {
+      const source = index * 5;
+      const age = now - this.leftTrail[source + 2];
+      if (age < 0 || age > 1400 || this.leftTrail[source + 3] <= 0) continue;
+      const recovery = 1 - age / 1400;
+      const radius = this.leftTrail[source + 4] * (0.74 + recovery * 0.26);
+      const target = trailCount++ * 5;
+      this.activeTrails[target] = this.leftTrail[source];
+      this.activeTrails[target + 1] = this.leftTrail[source + 1];
+      this.activeTrails[target + 2] = radius;
+      this.activeTrails[target + 3] = radius * radius;
+      this.activeTrails[target + 4] = recovery * this.leftTrail[source + 3] * 0.0048;
     }
 
     for (let index = 0; index < count; index += 1) {
@@ -181,24 +217,19 @@ export class GestureParticleField {
         + this.disperseTargets[offset + 2] * disperseWeight * (1 - filamentWeight);
 
       if (filamentWeight > 0) {
-        const t = hash(index * 1.913 + 311);
-        const wave = Math.sin(t * Math.PI * 5 + now * 0.0022 + hash(index + 313) * 2.4);
-        const ribbonWidth = (0.018 + (1 - Math.max(hand.leftPinch, hand.rightPinch)) * 0.055 + hand.motionEnergy * 0.035) * wave;
-        const dx = rightPalmX - leftPalmX;
-        const dy = rightPalmY - leftPalmY;
-        const length = Math.max(0.01, Math.hypot(dx, dy));
-        const normalX = -dy / length;
-        const normalY = dx / length;
-        const arc = Math.sin(t * Math.PI) * (0.12 + hand.motionEnergy * 0.16) * (hash(index + 314) - 0.18);
-        const curveX = lerp(leftPalmX, rightPalmX, t) + normalX * (ribbonWidth + arc);
-        const curveY = lerp(leftPalmY, rightPalmY, t) + normalY * (ribbonWidth + arc);
+        const seed = index * 6;
+        const t = this.motionSeeds[seed];
+        const wave = Math.sin(t * Math.PI * 5 + now * 0.0022 + this.motionSeeds[seed + 1]);
+        const arc = this.motionSeeds[seed + 2] * arcScale;
+        const curveX = lerp(leftPalmX, rightPalmX, t) + normalX * (ribbonWidth * wave + arc);
+        const curveY = lerp(leftPalmY, rightPalmY, t) + normalY * (ribbonWidth * wave + arc);
         targetX += curveX * filamentWeight;
         targetY += curveY * filamentWeight;
-        targetZ += ((hash(index + 315) - 0.5) * 0.13 + wave * 0.035) * filamentWeight;
+        targetZ += (this.motionSeeds[seed + 3] + wave * 0.035) * filamentWeight;
       }
 
       if (!this.reducedMotion && disperseWeight > 0.05) {
-        const angle = now * 0.00004 * (0.3 + disperseWeight) + hash(index + 17) * 0.5 + hand.rightRotation * (0.08 + hash(index + 19) * 0.12);
+        const angle = disperseAngle + this.motionSeeds[index * 6 + 4] + hand.rightRotation * this.motionSeeds[index * 6 + 5];
         const cos = Math.cos(angle);
         const sin = Math.sin(angle);
         const rotatedX = targetX * cos - targetY * sin;
@@ -235,21 +266,18 @@ export class GestureParticleField {
         velocityZ += Math.abs(force) * 0.42;
       }
 
-      for (let trailIndex = 0; trailIndex < 12; trailIndex += 1) {
+      for (let trailIndex = 0; trailIndex < trailCount; trailIndex += 1) {
         const trailOffset = trailIndex * 5;
-        const age = now - this.leftTrail[trailOffset + 2];
-        if (age < 0 || age > 1400) continue;
-        const recovery = 1 - age / 1400;
-        const trailX = this.leftTrail[trailOffset];
-        const trailY = this.leftTrail[trailOffset + 1];
-        const trailRadius = this.leftTrail[trailOffset + 4] * (0.74 + recovery * 0.26);
+        const trailX = this.activeTrails[trailOffset];
+        const trailY = this.activeTrails[trailOffset + 1];
+        const trailRadius = this.activeTrails[trailOffset + 2];
         const trailDx = this.positions[offset] - trailX;
         const trailDy = this.positions[offset + 1] - trailY;
         const trailDistanceSquared = trailDx * trailDx + trailDy * trailDy;
-        if (trailDistanceSquared >= trailRadius * trailRadius) continue;
+        if (trailDistanceSquared >= this.activeTrails[trailOffset + 3]) continue;
         const trailDistance = Math.max(0.03, Math.sqrt(trailDistanceSquared));
         const trailFalloff = 1 - trailDistance / trailRadius;
-        const trailForce = trailFalloff * recovery * this.leftTrail[trailOffset + 3] * 0.0048;
+        const trailForce = trailFalloff * this.activeTrails[trailOffset + 4];
         velocityX += (trailDx / trailDistance) * trailForce;
         velocityY += (trailDy / trailDistance) * trailForce;
       }

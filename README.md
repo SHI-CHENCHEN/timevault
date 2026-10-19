@@ -21,6 +21,13 @@ Chrome or Edge on a recent computer is recommended for WebGL and camera support.
 Use the HTTPS website directly, not an embedded social-app preview. Unsupported
 or denied cameras retain the existing mouse/keyboard controls.
 
+On supported browsers, hand detection runs in a local GPU/CPU Web Worker so it
+does not block the particle animation. Only the latest frame is processed, with
+one frame in flight and a 30 FPS ceiling; older browsers use the paced compatible
+path. Position/open-palm filtering is time-based rather than detection-count
+based. The deliberate chapter dwell/release gate is unchanged. In non-exhibition mode, Shift+D diagnostics
+show inference cost, frame-to-result age and the active processing thread.
+
 The public version is standalone. Time account/history data is saved locally per
 browser and origin, not shared between visitors. Previous Sites-domain data does
 not automatically transfer to this GitHub Pages domain. This is an interactive

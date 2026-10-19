@@ -344,6 +344,7 @@ export function DigitalOrbit({
     const animate = (now: number) => {
       const delta = Math.min(34, now - lastFrameAt);
       lastFrameAt = now;
+      if (document.hidden) return;
       const { interaction } = state.snapshot;
       const screen = interaction.currentScreen;
       const inState = (now - state.screenEnteredAt) / 1000;
