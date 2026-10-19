@@ -1,0 +1,133 @@
+/* V4.5 / RECLAIM is cold blue. STORE keeps its silver-violet identity. */
+.app--buy { --buy-ink: #d9e8f8; --buy-soft: #98b7d8; --buy-line: #263b50; --buy-accent: #8bb9eb; }
+.app:is(.app--mode_selection, .app--time_selection, .app--buyback_countdown) { background: #000; }
+.app:is(.app--mode_selection, .app--time_selection, .app--buyback_countdown)::before,
+.app:is(.app--mode_selection, .app--time_selection, .app--buyback_countdown)::after,
+.app:is(.app--mode_selection, .app--time_selection, .app--buyback_countdown) .environment-art { display: none; }
+.app--buyback_countdown .digital-orbit-layer { visibility: hidden; }
+.app--buy .receipt-heading, .app--buy .receipt-balance, .app--buy .outcome-heading, .app--buy .outcome-account { border-color: #213042; }
+.app--buy .receipt-reference, .app--buy .receipt-direction, .app--buy .receipt-note,
+.app--buy .receipt-balance span, .app--buy .receipt-footer > p, .app--buy .receipt-duration > span,
+.app--buy .outcome-heading > span, .app--buy .outcome-eyebrow, .app--buy .outcome-copy > p,
+.app--buy .outcome-account span, .app--buy .outcome-footer > span, .app--buy .outcome-steps { color: #98b3cf; }
+.app--buy .receipt-balance strong, .app--buy .receipt-duration strong, .app--buy .exchange-receipt h1,
+.app--buy .transaction-outcome h1, .app--buy .outcome-account strong { color: #d9e7f6; }
+.app--buy .receipt-balance > i, .app--buy .receipt-balance > small { color: #7d9bb9; border-color: #273e56; }
+.app--buy .exchange-receipt .state-caption::before, .app--buy .outcome-status > i, .app--buy .outcome-steps > span::before { background: #81aade; }
+.app--buy .receipt-dial__edge, .app--buy .outcome-clock__edge { stroke: #283c50; }
+.app--buy .receipt-dial line, .app--buy .outcome-clock line { stroke: #496c8f; }
+.app--buy .receipt-dial__track, .app--buy .outcome-clock__track { stroke: #263b52; }
+.app--buy .receipt-dial__amount { stroke: #8ebff0; }
+.app--buy .receipt-dial__unit, .app--buy .outcome-clock__unit { fill: #040a10; stroke: #456b94; }
+.app--buy .receipt-dial__unit.is-filled, .app--buy .outcome-clock__unit.is-filled { fill: #8eb9e4; stroke: #b7d3f0; }
+.app--buy .receipt-dial__center > span, .app--buy .receipt-dial__center > small,
+.app--buy .receipt-dial__legend, .app--buy .outcome-clock__value > span,
+.app--buy .outcome-clock__value > small, .app--buy .outcome-clock__legend { color: #8eacc9; }
+.app--buy .receipt-dial__center > strong, .app--buy .outcome-clock__value > strong { color: #c9dff5; }
+.app--buy .outcome-clock__sweep line { stroke: #8daedd; }
+.app--buy .outcome-clock__sweep circle { fill: #a1c7f0; }
+.app--buy .exchange-receipt .receipt-confirm, .app--buy .transaction-outcome .outcome-return { background: linear-gradient(110deg, #c7dcef, #8eafd1); border-color: #a5c5e4; color: #11283d; box-shadow: inset 0 1px 0 #e0eefb; }
+.app--buy .exchange-receipt .receipt-confirm:hover, .app--buy .transaction-outcome .outcome-return:hover { background: #d7e7f6; border-color: #ddecfa; }
+.app--buy .receipt-confirm i, .app--buy .receipt-confirm b, .app--buy .outcome-return small { color: #375876; }
+.app--buy .exchange-receipt .receipt-cancel { color: #a5bfd9; border-color: #314b67; }
+.app--buy .exchange-receipt .receipt-cancel:hover { background: #0b1824; border-color: #82a5c7; }
+.app--buy .button:focus-visible { outline-color: #b0d4f7; }
+.app--buy .selection-readout > strong, .app--buy .selection-copy h1, .app--buy .fragment-clock__center b { color: #d1e1f2; }
+.app--buy .selection-readout small b { color: #8fb6e5; text-shadow: none; }
+.app--buy .selection-readout small, .app--buy .selection-copy p, .app--buy .fragment-clock__center { color: #97b0ca; }
+.app--buy .fragment-clock circle { stroke: #23374c; }
+.app--buy .fragment-clock line { stroke: #365472; }
+.app--buy .fragment-clock line.is-filled { stroke: #83adde; }
+.app--buy .fragment-clock .fragment-clock__slot { stroke: #365b81; fill: #112337; }
+.app--buy .fragment-clock .fragment-clock__slot.is-filled { fill: #192f46; }
+.app--buy .fragment-clock__sweep { stroke: #456887; }
+.app--buy .time-option.is-selected { background: linear-gradient(180deg, #10243b, #050c14); }
+.app--buy .time-option.is-selected strong, .app--buy .time-option.is-selected span { color: #d1e4f7; }
+.app--buy .time-option.is-selected::before { background: #86b8ed; }
+.app--buy .peripheral-actions .button--primary { border-color: #6d98c1; background: #12253a; color: #c8def5; }
+.intro-actions button:nth-child(2):hover, .app--idle .idle-actions > button:nth-child(2):hover { color: #b8d9f8; background: #11243a; border-color: #5a81af; }
+
+/* The existing clock is now an uncluttered protected interval, not an apparatus backdrop. */
+.app--entered .screen-layer.active-time { inset: 0; width: min(1100px, calc(100% - 2 * var(--side))); margin: 0 auto; padding: clamp(140px, 16vh, 210px) 0 78px; min-height: 0; display: flex; flex-direction: column; justify-content: center; gap: 0; background: #000; animation: none; pointer-events: auto; }
+.active-time > * { flex-shrink: 0; }
+.active-time-heading { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding-bottom: 24px; border-bottom: 1px solid #243344; color: #9bb4ce; font-size: 9px; letter-spacing: 0.15em; }
+.active-time-heading > span:last-child { display: flex; align-items: center; gap: 10px; }
+.active-time-heading i { width: 4px; height: 4px; border-radius: 50%; background: #87b2dd; }
+.active-time-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 72px; align-items: center; padding: 42px 0; }
+.active-time-copy > span { color: #91add0; font-size: 9px; letter-spacing: 0.16em; }
+.active-time h1 { margin: 22px 0 26px; font-size: clamp(38px, 3.9vw, 66px); font-weight: 220; line-height: 1.13; letter-spacing: 0.01em; color: #d6e6f7; text-transform: none; }
+.active-time-copy > p { margin: 0; font-size: 12px; line-height: 1.8; color: #93a9bf; letter-spacing: 0.025em; }
+.active-time-copy dl { margin: 38px 0 0; display: flex; gap: 42px; }
+.active-time-copy dl > div { display: grid; gap: 12px; }
+.active-time-copy dt { color: #819ab5; font-size: 8px; letter-spacing: 0.13em; }
+.active-time-copy dd { margin: 0; color: #c8dbee; font-size: 20px; font-weight: 250; letter-spacing: 0.05em; }
+.active-time-clock { width: min(100%, 420px); position: relative; aspect-ratio: 1; justify-self: end; }
+.active-time-clock svg { display: block; width: 100%; height: 100%; fill: none; }
+.active-time-clock__edge { stroke: #263849; stroke-width: 0.7; }
+.active-time-clock__track { stroke: #233448; stroke-width: 1.2; }
+.active-time-clock__remaining { stroke: #90b6df; stroke-width: 2; stroke-linecap: round; }
+.active-time-clock line { stroke: #42617e; stroke-width: 0.8; }
+.active-time-clock__value { position: absolute; inset: 24% 0; display: grid; align-content: center; justify-items: center; gap: 24px; }
+.active-time-clock__value > span { color: #94b1ce; font-size: 8px; letter-spacing: 0.16em; }
+.active-time-clock__value time { display: flex; align-items: baseline; gap: 5px; color: #d5e7fa; font-variant-numeric: tabular-nums; font-size: clamp(58px, 5vw, 86px); font-weight: 180; letter-spacing: -0.035em; line-height: 1; }
+.active-time-clock__value b { font-weight: inherit; }
+.active-time-clock__value time i { font-style: normal; color: #597799; font-size: 0.65em; transform: translateY(-4px); }
+.active-time-clock__value small { color: #91a7bd; font-size: 7px; letter-spacing: 0.13em; }
+.active-time-clock__value small i { margin: 0 14px; font-style: normal; color: #526f8c; }
+.active-time-footer { display: flex; justify-content: space-between; gap: 32px; align-items: center; border-top: 1px solid #243344; padding-top: 26px; }
+.active-time-footer > p { margin: 0; color: #8aa1b8; font-size: 8px; letter-spacing: 0.13em; line-height: 1.8; }
+.active-time-footer small { display: block; margin-top: 9px; color: #647f98; font-size: 10px; letter-spacing: 0.02em; }
+.active-time .active-time-focus { display: flex; align-items: center; justify-content: space-between; gap: 42px; min-height: 56px; min-width: 210px; padding: 12px 20px; border: 1px solid #527b9e; border-radius: 4px; background: #07121d; color: #b7d4f0; font-size: 9px; letter-spacing: 0.12em; transform: none; }
+.active-time-focus > span { font-size: 23px; font-weight: 250; }
+.active-time .active-time-focus:hover { background: #12263a; border-color: #92b8db; }
+.active-time--focused .active-time-body { grid-template-columns: 1fr; padding: 28px 0; }
+.active-time--focused .active-time-copy { display: none; }
+.active-time--focused .active-time-clock { justify-self: center; width: min(52vh, 440px); }
+
+/* New cover controls affect only the visual stream, never the reserve. */
+.app--intro .intro-vessel-feedback { min-width: 130px; font-size: 8px; letter-spacing: 0.14em; text-align: center; color: #bd9ed7; }
+.app--intro .intro-sculpture-control { -webkit-tap-highlight-color: transparent; user-select: none; }
+.app--intro .intro-sculpture-control:focus-visible { outline-style: dashed; outline-offset: -10px; }
+.app--intro .intro-vessel-tools button { background: rgba(21, 15, 29, 0.8); border-color: #4b395a; border-radius: 16px; padding-inline: 14px; transition: color 180ms ease, border-color 180ms ease, background 180ms ease; }
+.intro-object-hint { bottom: 12%; pointer-events: auto; }
+.intro-vessel-tools { width: 100%; display: flex; justify-content: center; gap: 8px; }
+.intro-vessel-tools button { min-height: 32px; padding: 8px 12px; border: 1px solid #574368; border-radius: 3px; background: #17101f; color: #c0a9d2; font-size: 7px; letter-spacing: 0.08em; cursor: pointer; }
+.intro-vessel-tools button:hover, .intro-vessel-tools button[aria-pressed="true"] { background: #2d203d; border-color: #a083bd; color: #e2cfee; }
+.intro-vessel-tools button:focus-visible { outline: 1px solid #dcc3f1; outline-offset: 3px; }
+
+/* Camera troubleshooting is local and opt-in; skeleton diagnostics stay developer-only. */
+.hand-camera-health { display: grid; gap: 7px; padding: 10px 0; border-block: 1px solid #342c40; color: #b5a4c8; font-size: 7px; letter-spacing: 0.08em; }
+.hand-camera-health small { color: #b1a4be; font-size: 10px; line-height: 1.6; letter-spacing: 0.01em; }
+.hand-camera-error { border-left: 2px solid #8e88af; padding: 4px 0 4px 12px; }
+.hand-camera-error strong { font-size: 8px; letter-spacing: 0.1em; color: #c2b5d0; }
+.hand-mirror-panel .hand-camera-error p { margin: 9px 0 0; color: #b5a8c2; font-size: 10px; line-height: 1.6; letter-spacing: 0.01em; overflow-wrap: anywhere; }
+.hand-camera-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.hand-camera-actions .button { min-width: 0; padding: 12px; font-size: 7px; }
+.camera-backdrop--guide video { filter: grayscale(0.6) saturate(0.3) brightness(0.62); }
+.camera-backdrop--guide .camera-backdrop__veil { opacity: 0.5; }
+.hand-camera-guide { position: absolute; left: 38%; top: 25%; width: 25%; height: 47%; display: flex; flex-direction: column; justify-content: space-between; align-items: center; gap: 12px; pointer-events: none; color: #d2c7df; font-size: 8px; letter-spacing: 0.11em; }
+.hand-camera-guide i { flex: 1; width: 100%; border: 1px dashed #a89ab966; border-radius: 40%; }
+.hand-camera-guide small { font-size: 6px; letter-spacing: 0.1em; }
+@media (max-height: 850px) and (min-width: 821px) {
+  .app--entered .screen-layer.active-time { padding-top: 130px; padding-bottom: 62px; }
+  .active-time-body { padding: 28px 0; }
+  .active-time-clock { width: 330px; }
+  .active-time h1 { font-size: 48px; }
+}
+@media (max-width: 820px) {
+  .app--entered .screen-layer.active-time { inset: 126px 0 56px; width: calc(100% - 48px); padding: 24px 0 36px; justify-content: start; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #263c54 #000; }
+  .active-time-heading { font-size: 7px; letter-spacing: 0.08em; }
+  .active-time-body { grid-template-columns: 1fr; gap: 28px; padding: 28px 0; }
+  .active-time h1 { font-size: 38px; }
+  .active-time-copy dl { margin-top: 24px; }
+  .active-time-clock { width: min(100%, 300px); justify-self: center; }
+  .active-time-clock__value { gap: 18px; }
+  .active-time-clock__value time { font-size: 66px; }
+  .active-time-footer { flex-direction: column; align-items: stretch; gap: 20px; }
+  .active-time--focused .active-time-clock { width: min(100%, 320px); }
+  .intro-object-hint { bottom: 20%; width: calc(100% - 48px); gap: 6px; }
+  .intro-object-hint > span { font-size: 7px; }
+  .intro-object-hint > small { display: none; }
+  .intro-vessel-tools button { font-size: 6px; min-height: 32px; padding: 8px; }
+  .hand-camera-guide { left: 20%; top: 38%; width: 60%; height: 32%; }
+}

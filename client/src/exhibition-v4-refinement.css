@@ -1,0 +1,99 @@
+/* V4.1 / A chronometer, a vessel, a clear account. */
+.intro-sculpture-control { top: 14%; height: 63%; }
+.intro-object-hint { bottom: 15%; gap: 12px; }
+.intro-weave-caption { bottom: 6.5%; }
+.intro-sculpture-control:focus-visible { outline-color: rgba(159, 118, 192, 0.3); border-radius: 20px; }
+
+.app--idle.app--entered .idle-experience {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+  grid-template-rows: minmax(300px, 1fr) auto auto;
+  grid-template-areas: "copy vessel" "actions actions" "account account";
+  gap: 26px 60px;
+  padding: clamp(142px, 16vh, 215px) var(--side) 76px;
+  background: transparent;
+}
+.app--idle.app--entered .idle-statement {
+  grid-area: copy; position: static; align-self: center; width: 100%; max-width: 620px;
+}
+.app--idle .idle-statement h1 { font-size: clamp(36px, 3.35vw, 68px); line-height: 1.16; letter-spacing: 0.01em; margin-top: 26px; }
+.app--idle .idle-statement > span { font-size: 9px; }
+.app--idle .idle-statement > p { margin-top: 28px; font-size: 9px; line-height: 1.8; letter-spacing: 0.18em; }
+.app--idle .idle-reserve-annotation {
+  position: static; margin-top: 42px; padding: 20px 0 0;
+  border-left: 0; border-top: 1px solid rgba(166, 137, 191, 0.17);
+  width: min(100%, 350px); gap: 14px;
+}
+.app--idle .idle-reserve-annotation span { font-size: 9px; }
+.app--idle .idle-reserve-annotation strong { font-size: clamp(30px, 2.3vw, 46px); }
+.app--idle .idle-reserve-annotation i { margin-left: 5px; font-size: 10px; }
+.idle-vessel-stage { grid-area: vessel; min-width: 0; min-height: 0; pointer-events: none; }
+.app--idle.app--entered .idle-actions {
+  grid-area: actions; position: static; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+  width: 100%; gap: 12px; align-self: end;
+}
+.app--idle.app--entered .idle-actions > button {
+  display: grid; width: 100%; min-height: 82px; margin: 0; padding: 16px 22px;
+  border: 1px solid rgba(170, 137, 199, 0.16); border-radius: 0;
+  background: rgba(53, 34, 69, 0.08); transform: none;
+}
+.app--idle .idle-actions > button span { font-size: 9px; letter-spacing: 0.12em; }
+.app--idle .idle-actions > button strong { align-self: end; font-size: 12px; letter-spacing: 0.17em; }
+.app--idle .idle-actions > button small { margin-top: 5px; font-size: 8px; }
+.app--idle .idle-actions > button::after { display: none; }
+.app--idle .idle-actions > button:hover { background: rgba(98, 60, 125, 0.15); border-color: rgba(163, 117, 196, 0.4); }
+.app--idle .account-summary {
+  grid-area: account; position: static; width: 100%; display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px;
+  margin-top: 0; border-top: 1px solid rgba(150, 122, 168, 0.14);
+}
+.app--idle .account-summary div { gap: 10px; padding: 18px 0 0; }
+.app--idle .account-summary span { font-size: 8px; letter-spacing: 0.15em; }
+.app--idle .account-summary strong { font-size: 20px; font-weight: 280; }
+.app--idle.app--entered .digital-orbit-layer { opacity: 0.62; filter: saturate(0.68) brightness(0.85); }
+
+.app--history, .app--history .history-experience--atlas { background: #000; }
+.app--history::before, .app--history::after { display: none; }
+.app--history .environment-art { display: none; }
+.app--history .digital-orbit-layer { visibility: hidden; }
+
+.app .intro-time-pulse, .app--intro .intro-time-pulse {
+  width: 16px; height: 16px; border: 1px solid rgba(169, 127, 201, 0.52);
+  border-top-color: transparent; border-left-color: transparent;
+  border-radius: 50%; box-shadow: none; background: none;
+  animation: chrono-click 480ms ease-out both;
+}
+.app .intro-time-pulse::after {
+  inset: 5px; border: 0; border-radius: 1px; background: rgba(194, 159, 215, 0.6);
+  transform: rotate(45deg);
+}
+@keyframes chrono-click {
+  from { opacity: 0.85; transform: translate(-50%, -50%) scale(0.65) rotate(-35deg); }
+  to { opacity: 0; transform: translate(-50%, -50%) scale(1.8) rotate(35deg); }
+}
+@media (max-width: 1100px) {
+  .app--idle.app--entered .idle-experience { gap: 24px; padding-top: 150px; grid-template-columns: 1.1fr 1fr; }
+  .app--idle .idle-statement h1 { font-size: 38px; }
+  .app--idle .idle-reserve-annotation { margin-top: 30px; }
+  .app--idle.app--entered .idle-actions > button { padding: 14px; }
+  .intro-object-hint { bottom: 14%; }
+}
+@media (max-width: 820px) {
+  .intro-sculpture-control { top: 38%; height: 34%; }
+  .intro-object-hint { bottom: 22%; gap: 8px; }
+  .app--idle.app--entered .idle-experience {
+    inset: 126px 0 56px; padding: 28px 24px 40px; overflow-y: auto; pointer-events: auto;
+    grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 350px auto auto;
+    grid-template-areas: "copy" "vessel" "actions" "account"; gap: 26px;
+  }
+  .app--idle .idle-statement h1 { font-size: clamp(30px, 8vw, 42px); }
+  .app--idle .idle-statement > p { font-size: 8px; }
+  .app--idle .idle-reserve-annotation { margin-top: 24px; }
+  .app--idle.app--entered .idle-actions, .app--idle .account-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .app--idle.app--entered .idle-actions > button { min-height: 78px; }
+  .app--idle .account-summary strong { font-size: 18px; }
+  .app--idle.app--entered .digital-orbit-layer { clip-path: inset(126px 0 56px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app .intro-time-pulse { animation-duration: 180ms; }
+}
