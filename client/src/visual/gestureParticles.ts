@@ -145,11 +145,13 @@ export class GestureParticleField {
     this.group.visible = this.material.opacity > 0.006;
     if (!this.group.visible) return;
 
-    const delta = Math.min(0.034, deltaMs / 1000);
-    const { coreWeight, disperseWeight, rightPullStrength } = handFieldPolicy(hand);
+    const delta = Math.min(0.25, Math.max(0.001, deltaMs / 1000));
+    const frameScale = delta * 60;
+    const follow = 1 - Math.exp(-9 * delta);
+    const { coreWeight, disperseWeight, rightPullStrength, filamentActive } = handFieldPolicy(hand);
     const bothHands = hand.leftDetected && hand.rightDetected;
     const handSpan = bothHands ? Math.hypot(hand.rightPalmX - hand.leftPalmX, hand.rightPalmY - hand.leftPalmY) : 0;
-    const filamentWeight = bothHands ? clamp(0.18 + handSpan * 0.22, 0, 0.42) : 0;
+    const filamentWeight = filamentActive ? clamp(0.18 + handSpan * 0.22, 0, 0.42) : 0;
     const textWeight = Math.max(0, 1 - coreWeight - disperseWeight) * (1 - filamentWeight);
     const targetOpacity = this.targetOpacity + (hand.active ? hand.motionEnergy * 0.13 : 0);
     this.material.opacity = lerp(this.material.opacity, targetOpacity, targetOpacity > 0 ? 0.08 : 0.14);
@@ -167,8 +169,9 @@ export class GestureParticleField {
     // Only the left palm repels. The right hand attracts locally when pinched;
     // open/fist poses change the whole shape instead of duplicating left-palm push.
     const rightStrength = rightPullStrength;
-    const spring = this.reducedMotion ? 8.2 : 7.1;
     const damping = this.reducedMotion ? 0.82 : 0.87 - hand.motionEnergy * 0.025;
+    const decay = Math.pow(damping, frameScale);
+    const forceScale = damping * (1 - decay) / (1 - damping);
     const count = this.visibleCount;
     const filamentDx = rightPalmX - leftPalmX;
     const filamentDy = rightPalmY - leftPalmY;
@@ -238,9 +241,9 @@ export class GestureParticleField {
         targetX = rotatedX;
       }
 
-      let velocityX = this.velocities[offset] + (targetX - this.positions[offset]) * spring * delta;
-      let velocityY = this.velocities[offset + 1] + (targetY - this.positions[offset + 1]) * spring * delta;
-      let velocityZ = this.velocities[offset + 2] + (targetZ - this.positions[offset + 2]) * spring * delta;
+      let velocityX = 0;
+      let velocityY = 0;
+      let velocityZ = 0;
 
       for (let handIndex = 0; handIndex < 2; handIndex += 1) {
         const palmX = handIndex === 0 ? leftPalmX : rightPalmX;
@@ -298,9 +301,9 @@ export class GestureParticleField {
         velocityY += (dx / distance) * rotationForce;
       }
 
-      velocityX *= damping;
-      velocityY *= damping;
-      velocityZ *= damping;
+      velocityX = this.velocities[offset] * decay + velocityX * forceScale;
+      velocityY = this.velocities[offset + 1] * decay + velocityY * forceScale;
+      velocityZ = this.velocities[offset + 2] * decay + velocityZ * forceScale;
       const speed = Math.hypot(velocityX, velocityY, velocityZ);
       const maxSpeed = 0.054 + hand.motionEnergy * 0.022;
       if (speed > maxSpeed) {
@@ -312,16 +315,18 @@ export class GestureParticleField {
       this.velocities[offset] = velocityX;
       this.velocities[offset + 1] = velocityY;
       this.velocities[offset + 2] = velocityZ;
-      this.positions[offset] += velocityX;
-      this.positions[offset + 1] += velocityY;
-      this.positions[offset + 2] += velocityZ;
+      // Exponential target following uses elapsed time, not frame count. A
+      // slow camera/CPU must not make the visual reaction several times slower.
+      this.positions[offset] = lerp(this.positions[offset], targetX, follow) + velocityX * frameScale;
+      this.positions[offset + 1] = lerp(this.positions[offset + 1], targetY, follow) + velocityY * frameScale;
+      this.positions[offset + 2] = lerp(this.positions[offset + 2], targetZ, follow) + velocityZ * frameScale;
     }
     this.positionAttribute.needsUpdate = true;
   }
 
   adaptPerformance(fps: number): void {
-    if (fps > 0 && fps < 42 && this.visibleCount > Math.floor(this.count * 0.58)) {
-      this.visibleCount = Math.max(Math.floor(this.count * 0.58), Math.floor(this.visibleCount * 0.82));
+    if (fps > 0 && fps < 42 && this.visibleCount > Math.floor(this.count * 0.4)) {
+      this.visibleCount = Math.max(Math.floor(this.count * 0.4), Math.floor(this.visibleCount * 0.82));
       this.geometry.setDrawRange(0, this.visibleCount);
     } else if (fps > 56 && this.visibleCount < this.count) {
       this.visibleCount = Math.min(this.count, this.visibleCount + Math.ceil(this.count * 0.06));

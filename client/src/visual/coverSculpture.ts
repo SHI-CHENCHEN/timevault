@@ -178,7 +178,7 @@ export class CoverSculpture {
       add(new THREE.SphereGeometry(0.018, 12, 8), this.lightMaterial, x, -0.32, 0.315, controller);
     }
 
-    const calibrationMaterial = new THREE.LineBasicMaterial({ color: 0xaaa0ca, transparent: true, opacity: 0.16 });
+    const calibrationMaterial = new THREE.LineBasicMaterial({ color: 0x6f659e, transparent: true, opacity: 0.38 });
     this.materials.push(calibrationMaterial);
     const calibrationPositions: number[] = [];
     for (let index = 0; index < 60; index += 1) {
@@ -196,8 +196,8 @@ export class CoverSculpture {
       arcPoints.push(new THREE.Vector3(Math.cos(angle) * 2.82 + 0.1, Math.sin(angle) * 2.82, -1.5));
     }
     this.chronometer.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(arcPoints), calibrationMaterial));
-    for (const [length, opacity] of [[1.32, 0.2], [2.1, 0.18], [2.6, 0.3]]) {
-      const material = new THREE.LineBasicMaterial({ color: 0xb9a1d3, transparent: true, opacity });
+    for (const [length, opacity] of [[1.32, 0.58], [2.1, 0.52], [2.6, 0.78]]) {
+      const material = new THREE.LineBasicMaterial({ color: 0x7760a5, transparent: true, opacity });
       this.materials.push(material);
       const hand = new THREE.Line(new THREE.BufferGeometry().setFromPoints([
         new THREE.Vector3(0, 0.26, 0), new THREE.Vector3(0, length, 0),
@@ -339,7 +339,8 @@ export class CoverSculpture {
     const target = -0.32 + controls.yaw + (this.reducedMotion ? 0 : pointerX * 0.13 + Math.sin(time * 0.16) * 0.055);
     this.vessel.rotation.y += (target - this.vessel.rotation.y) * 0.07;
     this.vessel.rotation.x += ((this.reducedMotion ? 0.04 : 0.04 - pointerY * 0.045) + (cover ? controls.pitch : 0) - this.vessel.rotation.x) * 0.05;
-    this.lightMaterial.emissiveIntensity = 0.65 + pulse * 2 + charge * 1.1 + this.hoverLight * 0.18 + (this.reducedMotion ? 0 : Math.sin(time * 0.8) * 0.12);
+    this.vessel.position.y = cover && !this.reducedMotion ? Math.sin(time * 1.1) * 0.025 + charge * 0.035 : 0;
+    this.lightMaterial.emissiveIntensity = 0.65 + pulse * 2 + charge * 1.1 + this.hoverLight * 0.65 + (this.reducedMotion ? 0 : Math.sin(time * 0.8) * 0.12);
     this.grainMaterial.size = cover ? 0.019 + charge * 0.003 + pulse * 0.005 : 0.019;
     this.grainMaterial.opacity = cover ? 0.78 + charge * 0.14 : 0.78;
     if (cover) {

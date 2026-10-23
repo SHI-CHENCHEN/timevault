@@ -50,6 +50,17 @@ describe("physical hand roles", () => {
       expect(policy.disperseWeight + policy.coreWeight).toBe(0);
     }
   });
+  it("does not mistake a fist with adjacent thumb/index tips for a pinch", () => {
+    const policy = handFieldPolicy(hand({ rightDetected: true, rightOpenness: 0.1, rightPinch: 1 }));
+    expect(policy.rightMode).toBe("GATHER");
+    expect(policy.rightPullStrength).toBe(0);
+  });
+  it("lets deliberate right-hand shapes take priority over the two-hand filament", () => {
+    const open = handFieldPolicy(hand({ leftDetected: true, rightDetected: true, rightOpenness: 1 }));
+    expect(open.fieldMode).toBe("DISPERSE"); expect(open.filamentActive).toBe(false);
+    const fist = handFieldPolicy(hand({ leftDetected: true, rightDetected: true, rightOpenness: 0 }));
+    expect(fist.fieldMode).toBe("GATHER"); expect(fist.filamentActive).toBe(false);
+  });
   it("ignores all right-hand effects after camera stop", () => {
     const policy = handFieldPolicy(hand({ active: false, leftDetected: true, rightDetected: true, rightPinch: 1, rightOpenness: 0 }));
     expect(policy.fieldMode).toBe("AMBIENT");

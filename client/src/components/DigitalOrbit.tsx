@@ -105,7 +105,7 @@ export function DigitalOrbit({
     scene.add(world);
 
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const particleCount = reducedMotion ? 4_800 : window.innerWidth < 1280 ? 8_200 : 12_000;
+    const particleCount = reducedMotion ? 3_600 : window.innerWidth < 1280 ? 6_000 : 8_200;
     const gestureParticles = new GestureParticleField(particleCount, reducedMotion);
     camera.add(gestureParticles.group);
     const coverSculpture = new CoverSculpture(renderer, reducedMotion);
@@ -277,6 +277,8 @@ export function DigitalOrbit({
       state.snapshot = nextSnapshot;
       state.debug = nextDebug;
       state.introActive = nextIntroActive;
+      const pixelRatio = Math.min(window.devicePixelRatio, nextHandMirrorEnabled ? 1.2 : 1.8);
+      if (renderer.getPixelRatio() !== pixelRatio) renderer.setPixelRatio(pixelRatio);
       const nextCompositionKey = nextSnapshot.composition.structures
         .map((structure) => `${structure.id}:${structure.kind}:${structure.minutes}`)
         .join("|");
@@ -341,12 +343,34 @@ export function DigitalOrbit({
     };
     window.addEventListener("pointermove", onPointerMove, { passive: true });
 
+    const finishFrame = (now: number) => {
+      frameCount += 1;
+      if (now - lastFpsAt >= 1000) {
+        const measuredFps = Math.round((frameCount * 1000) / (now - lastFpsAt));
+        gestureParticles.adaptPerformance(measuredFps);
+        if (state.debug.showFps) setFps(measuredFps);
+        frameCount = 0;
+        lastFpsAt = now;
+      }
+      renderer.render(scene, camera);
+    };
     const animate = (now: number) => {
-      const delta = Math.min(34, now - lastFrameAt);
+      const elapsed = Math.min(250, now - lastFrameAt);
+      const delta = Math.min(34, elapsed);
       lastFrameAt = now;
       if (document.hidden) return;
       const { interaction } = state.snapshot;
       const screen = interaction.currentScreen;
+      world.visible = screen !== "REFLECTION";
+      if (screen === "REFLECTION") {
+        // Reflection renders only its own field. Hidden vessel/transaction
+        // updates must not compete with hand inference or leak into this page.
+        coverSculpture.group.visible = false;
+        selectionField.group.visible = false;
+        gestureParticles.update(elapsed, now, handMirrorRef.current);
+        finishFrame(now);
+        return;
+      }
       const inState = (now - state.screenEnteredAt) / 1000;
       const pulse = Math.exp(-(now - state.inputPulseAt) / 540);
       const quiet = screen === "BUYBACK_COUNTDOWN";
@@ -354,9 +378,9 @@ export function DigitalOrbit({
       const blackField = screen !== "IDLE";
       const receiptScreen = RECEIPT_SCREENS.has(screen);
       const durationIndex = Math.max(0, TIME_OPTIONS.indexOf(interaction.selectedMinutes));
-      const flowIndex = screen === "REFLECTION" ? interaction.reflectionStep - 1 : durationIndex - 2;
-      const targetX = intro ? 0.82 : ["HISTORY", "REFLECTION"].includes(screen) ? 1.85 : screen === "TIME_SELECTION" ? 1.04 : screen === "IDLE" ? 1.18 : 0.45;
-      const targetY = screen === "TIME_SELECTION" ? flowIndex * -0.16 : screen === "REFLECTION" ? flowIndex * -0.1 : 0;
+      const flowIndex = durationIndex - 2;
+      const targetX = intro ? 0.82 : screen === "HISTORY" ? 1.85 : screen === "TIME_SELECTION" ? 1.04 : screen === "IDLE" ? 1.18 : 0.45;
+      const targetY = screen === "TIME_SELECTION" ? flowIndex * -0.16 : 0;
       const targetScale = intro ? 1.18 : quiet ? 0.86 : screen === "TIME_SELECTION" ? 1.08 : screen === "IDLE" ? 1.1 : 1;
       world.position.x += (targetX - world.position.x) * 0.045;
       world.position.y += (targetY - world.position.y) * 0.055;
@@ -377,7 +401,7 @@ export function DigitalOrbit({
       atmosphere.visible = false;
       timeBandGroup.visible = false;
       timeBandGroup.rotation.z += delta * (intro ? 0.00013 : screen === "TIME_SELECTION" ? 0.000055 : 0.000024);
-      timeBandGroup.position.y += ((screen === "TIME_SELECTION" ? flowIndex * -0.22 : screen === "REFLECTION" ? flowIndex * -0.14 : 0) - timeBandGroup.position.y) * 0.06;
+      timeBandGroup.position.y += ((screen === "TIME_SELECTION" ? flowIndex * -0.22 : 0) - timeBandGroup.position.y) * 0.06;
       timeBandGroup.position.x = Math.sin(now * 0.00018) * (intro ? 0.12 : 0.035);
       timeBandMaterial.opacity = intro ? 0.022 + Math.sin(now * 0.00052) * 0.004 : screen === "TIME_SELECTION" ? 0.019 : 0.012;
       atmosphere.rotation.z += delta * (intro ? 0.000028 : 0.000009);
@@ -410,7 +434,7 @@ export function DigitalOrbit({
       apparatus.group.rotation.x = reducedMotion ? 0 : Math.cos(now * 0.00013) * 0.016 - pointer.y * 0.012;
       apparatus.group.position.y = 0.2 + (reducedMotion ? 0 : Math.sin(now * 0.00022) * 0.035);
       apparatus.setPresence(
-        screen === "REFLECTION" ? 0.075 : screen === "BUYBACK_COUNTDOWN" ? 0.18 : activeScreen(screen) ? 0.26 : 0.22,
+        screen === "BUYBACK_COUNTDOWN" ? 0.18 : activeScreen(screen) ? 0.26 : 0.22,
         reducedMotion ? 1 : 0.72 + Math.sin(now * 0.0014) * 0.28 + pulse * 0.32,
       );
       const trailFade = Math.max(0, 1 - (now - pointerActiveAt) / 1800);
@@ -500,16 +524,8 @@ export function DigitalOrbit({
 
       coverSculpture.update(now, intro || screen === "IDLE", state.snapshot.account.timeReserve, pointer.x, pointer.y, coverControlRef.current, intro);
       selectionField.update(now, screen === "TIME_SELECTION", camera.fov);
-      gestureParticles.update(delta, now, handMirrorRef.current);
-      frameCount += 1;
-      if (now - lastFpsAt >= 1000) {
-        const measuredFps = Math.round((frameCount * 1000) / (now - lastFpsAt));
-        gestureParticles.adaptPerformance(measuredFps);
-        if (state.debug.showFps) setFps(measuredFps);
-        frameCount = 0;
-        lastFpsAt = now;
-      }
-      renderer.render(scene, camera);
+      gestureParticles.update(elapsed, now, handMirrorRef.current);
+      finishFrame(now);
     };
 
     apiRef.current = {

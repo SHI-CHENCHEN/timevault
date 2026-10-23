@@ -92,13 +92,15 @@ describe("hand tracking math", () => {
     expect(cropped.rotation).toBe(plain.rotation);
   });
 
-  it("blocks gestures during warmup and requires a one-second dwell", () => {
+  it("blocks warmup, then requires a deliberate 700 ms stable pose", () => {
     let state = createGestureMachineState(0);
-    let result = advanceGestureMachine(state, { detected: true, fingerCount: 2 }, 900, 0);
+    let result = advanceGestureMachine(state, { detected: true, fingerCount: 2 }, 400, 0);
     expect(result.commit).toBeNull();
     state = result.state;
-    result = advanceGestureMachine(state, { detected: true, fingerCount: 2 }, 1400, 0);
-    result = advanceGestureMachine(result.state, { detected: true, fingerCount: 2 }, 2550, 0);
+    result = advanceGestureMachine(state, { detected: true, fingerCount: 2 }, 700, 0);
+    result = advanceGestureMachine(result.state, { detected: true, fingerCount: 2 }, 1350, 0);
+    expect(result.commit).toBeNull();
+    result = advanceGestureMachine(result.state, { detected: true, fingerCount: 2 }, 1400, 0);
     expect(result.commit).toBe(1);
     expect(result.state.phase).toBe("confirmed");
   });

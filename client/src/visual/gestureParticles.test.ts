@@ -21,6 +21,20 @@ function particleX(patch: Partial<HandMirrorVisualState>) {
 }
 
 describe("distinct physical-hand particle forces", () => {
+  it("follows a target at the same speed at 4, 15 and 60 rendered FPS", () => {
+    const positions = [4, 15, 60].map(fps => {
+      const field = new GestureParticleField(1, false);
+      field.setContext({ visible: true, step: 0, totalSold: 30, reserve: 30, totalRecovered: 0, countdownRemaining: null });
+      const points = field.group.children[0] as Points<BufferGeometry>;
+      const position = points.geometry.getAttribute("position") as BufferAttribute;
+      position.setXYZ(0, 0.8, 0, 0);
+      for (let i = 0; i < fps; i++) field.update(1000 / fps, (i + 1) * 1000 / fps, createHandMirrorVisualState());
+      const x = position.getX(0); field.dispose(); return x;
+    });
+    expect(positions[0]).toBeCloseTo(positions[2], 5);
+    expect(positions[1]).toBeCloseTo(positions[2], 5);
+    expect(positions[0]).toBeLessThan(0.001);
+  });
   it("a neutral right palm leaves a nearby particle on its normal spring path", () => {
     const ambient = particleX({});
     const right = particleX({ rightDetected: true, rightPalmX: 0.5, rightPalmY: 0.5 });

@@ -13,7 +13,8 @@ fragments, and optional local hand gestures powered by Three.js and MediaPipe.
 - Buy Back: reclaim time and start an active-time countdown.
 - History and Reflection: revisit your time and explore the Hand Mirror.
 - Hand Mirror: explicitly activate the camera and allow permission. Use the left
-  hand's 1/2/3 fingers for chapters and left palm to push. The right hand opens
+  hand's 1/2/3 fingers for chapters and left palm to push. Physical hand identity is retained through brief label glitches using motion continuity,
+  and expires after tracking loss. The right hand opens
   to disperse, closes to gather the Time Core, and pinches to pull. A relaxed right
   palm does not push; the left palm retains priority where the hands overlap.
   Camera processing stays in the browser: no camera
@@ -25,7 +26,10 @@ or denied cameras retain the existing mouse/keyboard controls.
 
 Hand tracking shows download progress on first use and reuses the browser cache.
 Slow downloads may continue while bytes arrive; startup waits for the complete
-local model/runtime. Slower CPU results are accepted with a bounded age allowance.
+local model/runtime. Slower CPU results are accepted with a bounded age allowance. Reflection renders
+only the hand field, with a lower pixel ratio and time-based particle following.
+Left chapter poses require a deliberate 700 ms hold; right fist and pinch have
+separate gates, and deliberate right shapes take priority over the dual-hand filament.
 
 On supported browsers, hand detection runs in a local GPU/CPU Web Worker so it
 does not block the particle animation. Only the latest frame is processed, with

@@ -158,7 +158,7 @@ export function ReflectionView({
           </span>
         </div>
         <div className="hand-mirror-panel__dwell" aria-hidden="true"><i style={{ width: `${handMirror.diagnostics.dwellProgress * 100}%` }} /></div>
-        <small className="hand-role-guide">LEFT / 1–3 CHAPTER · PALM PUSH<br />RIGHT / OPEN DISPERSE · FIST GATHER · PINCH PULL</small>
+        <small className="hand-role-guide">YOUR LEFT / 1–3 CHAPTER · PALM PUSH<br />YOUR RIGHT / OPEN DISPERSE · FIST GATHER · PINCH PULL<br />MIRRORED VIEW · ROLES FOLLOW YOUR PHYSICAL HANDS</small>
         {handMirror.enabled && handMirror.runtime ? <div className="hand-camera-health" role="status">
           <span>MODEL / {handMirror.runtime} · {handMirror.diagnostics.inferenceFps} FPS</span>
           <span>HANDS / {handMirror.diagnostics.detectedHandCount} OF 2 · VIDEO / {handMirror.cameraSize}</span>

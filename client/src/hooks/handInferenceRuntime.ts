@@ -58,7 +58,11 @@ async function createBackgroundDetector(model: Uint8Array, wasmPath: string, sig
     return {
       delegate: ready.delegate, background: true, close,
       detect: async (video, capturedAt) => {
-        const bitmap = await createImageBitmap(video);
+        const width = video.videoWidth || 640, height = video.videoHeight || 480;
+        const scale = Math.min(1, 480 / Math.max(width, height));
+        let bitmap: ImageBitmap;
+        try { bitmap = await createImageBitmap(video, { resizeWidth: Math.round(width * scale), resizeHeight: Math.round(height * scale), resizeQuality: "low" }); }
+        catch (error) { if (closed || signal.aborted) throw error; bitmap = await createImageBitmap(video); }
         if (closed || signal.aborted) { bitmap.close(); throw new Error("SESSION_CANCELLED"); }
         let response: HandWorkerResponse;
         try { response = await request({ type: "detect", bitmap, capturedAt }, [bitmap]); }

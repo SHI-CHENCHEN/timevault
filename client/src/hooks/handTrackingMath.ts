@@ -60,11 +60,11 @@ export interface GestureMachineConfig {
 }
 
 export const GESTURE_MACHINE_CONFIG: GestureMachineConfig = {
-  warmupMs: 1350,
-  candidateMs: 150,
-  dwellMs: 1000,
-  neutralReleaseMs: 380,
-  cooldownMs: 1200,
+  warmupMs: 650,
+  candidateMs: 100,
+  dwellMs: 600,
+  neutralReleaseMs: 250,
+  cooldownMs: 650,
   jitterGraceMs: 170,
   trackingLossToleranceMs: 520,
 };

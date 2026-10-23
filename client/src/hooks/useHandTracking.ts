@@ -3,6 +3,7 @@ import type { HandLandmarkerResult, NormalizedLandmark } from "@mediapipe/tasks-
 import type { ReflectionStep } from "@timevault/shared";
 import { createHandMirrorVisualState, type HandMirrorStatus, type HandMirrorVisualState, type HandSimulatorState, type HandTrackingDiagnostics } from "../visual/types";
 import { loadHandAssets } from "./handAssetLoader";
+import { HandIdentityTracker } from "./handIdentity";
 import { acquireSessionResource, cameraErrorIssue, cameraSupportIssue, type CameraIssue } from "./handCameraRuntime";
 import { advanceGestureMachine, createGestureMachineState, deriveHandMetrics, mapMediaPipeHandedness, projectCameraPoint, type CameraViewport, type GestureMachineState, type HandMetrics } from "./handTrackingMath";
 import { handFieldPolicy } from "../visual/handFieldPolicy";
@@ -174,6 +175,7 @@ export function useHandTracking({ reflectionActive, reflectionStep, onReflection
   const lastValidDetectionAtRef = useRef(0);
   const fpsRef = useRef({ startedAt: performance.now(), frames: 0, value: 0 });
   const previousHandsRef = useRef({ left: { x: 0.35, y: 0.5, at: 0 }, right: { x: 0.65, y: 0.5, at: 0 } });
+  const identityRef = useRef(new HandIdentityTracker());
   const [enabled, setEnabled] = useState(false);
   const [status, setStatus] = useState<HandMirrorStatus>("CAMERA_OFF");
   const [detail, setDetail] = useState<string | null>(null);
@@ -220,6 +222,7 @@ export function useHandTracking({ reflectionActive, reflectionStep, onReflection
     fillDebug(visual.debugLeft);
     fillDebug(visual.debugRight);
     previousHandsRef.current.left.at = 0; previousHandsRef.current.right.at = 0;
+    identityRef.current.clear();
     if (updateUi) {
       setEnabled(false);
       setUi(DEFAULT_UI);
@@ -339,19 +342,19 @@ export function useHandTracking({ reflectionActive, reflectionStep, onReflection
     const video = videoRef.current;
     const viewport = video ? { videoWidth: video.videoWidth, videoHeight: video.videoHeight, displayWidth: video.clientWidth, displayHeight: video.clientHeight } : undefined;
     cameraViewportRef.current = viewport;
-    const hands: NormalizedHand[] = [];
+    const hands: Array<NormalizedHand & { x: number; y: number }> = [];
     for (const [index, landmarks] of result.landmarks.entries()) {
       const category = result.handedness?.[index]?.[0] ?? result.handednesses?.[index]?.[0];
       if (!category || category.score < 0.5 || landmarks.length < 21) continue;
       // detectForVideo receives the raw camera video, not CSS-mirrored pixels.
       const side = mapMediaPipeHandedness(category.categoryName);
       if (!side) continue;
-      const next: NormalizedHand = { side, raw: category.categoryName.toUpperCase(), score: category.score, metrics: deriveHandMetrics(landmarks, viewport), landmarks };
-      const previousIndex = hands.findIndex((hand) => hand.side === side);
-      if (previousIndex < 0) hands.push(next);
-      else if (hands[previousIndex].score < next.score) hands[previousIndex] = next;
+      const palm = [0, 5, 9, 13, 17];
+      hands.push({ side, raw: category.categoryName.toUpperCase(), score: category.score, metrics: deriveHandMetrics(landmarks, viewport), landmarks,
+        x: palm.reduce((sum, i) => sum + landmarks[i].x, 0) / palm.length,
+        y: palm.reduce((sum, i) => sum + landmarks[i].y, 0) / palm.length });
     }
-    applyHands(hands, now, false);
+    applyHands(identityRef.current.resolve(hands, now), now, false);
   }, [applyHands]);
 
   const setSimulator = useCallback((patch: Partial<HandSimulatorState>) => setSimulatorState((current) => ({ ...current, ...patch })), []);
@@ -455,6 +458,7 @@ export function useHandTracking({ reflectionActive, reflectionStep, onReflection
         lastFrameAt = performance.now();
         gestureRef.current = createGestureMachineState(lastFrameAt);
         previousHandsRef.current.left.at = 0; previousHandsRef.current.right.at = 0;
+        identityRef.current.clear();
         if (document.hidden) applyHands([], lastFrameAt);
       };
       document.addEventListener("visibilitychange", visibilityChanged);
