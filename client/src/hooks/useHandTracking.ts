@@ -5,6 +5,7 @@ import { createHandMirrorVisualState, type HandMirrorStatus, type HandMirrorVisu
 import { inspectHandModelBundle } from "./handModelAsset";
 import { acquireSessionResource, cameraErrorIssue, cameraSupportIssue, type CameraIssue } from "./handCameraRuntime";
 import { advanceGestureMachine, createGestureMachineState, deriveHandMetrics, mapMediaPipeHandedness, projectCameraPoint, type CameraViewport, type GestureMachineState, type HandMetrics } from "./handTrackingMath";
+import { handFieldPolicy } from "../visual/handFieldPolicy";
 import { createHandDetector, type HandDetector } from "./handInferenceRuntime";
 import { HAND_SAMPLE_INTERVAL_MS, HandFramePacer, isFreshHandSample, palmSmoothingMs, smoothHandValue } from "./handTrackingTiming";
 
@@ -12,8 +13,8 @@ export interface HandMirrorUiSummary {
   leftDetected: boolean;
   leftFingerCount: number;
   rightDetected: boolean;
-  rightMode: "DISPERSE" | "GATHER" | "NEUTRAL";
-  fieldMode: "TIME_FILAMENT" | "PUSH" | "PULL" | "AMBIENT";
+  rightMode: "DISPERSE" | "GATHER" | "PULL" | "NEUTRAL";
+  fieldMode: "TIME_FILAMENT" | "PUSH" | "PULL" | "GATHER" | "DISPERSE" | "AMBIENT";
 }
 
 export interface HandTrackingController {
@@ -302,8 +303,7 @@ export function useHandTracking({ reflectionActive, reflectionStep, onReflection
     }
     if (now - lastUiAtRef.current < 250) return;
     lastUiAtRef.current = now;
-    const rightMode = visual.rightOpenness >= 0.62 ? "DISPERSE" : visual.rightOpenness <= 0.33 ? "GATHER" : "NEUTRAL";
-    const fieldMode = visual.leftDetected && visual.rightDetected ? "TIME_FILAMENT" : visual.leftDetected ? "PUSH" : visual.rightDetected && visual.rightPinch >= 0.46 ? "PULL" : "AMBIENT";
+    const { rightMode, fieldMode } = handFieldPolicy(visual);
     const nextUi: HandMirrorUiSummary = { leftDetected: visual.leftDetected, leftFingerCount: visual.leftFingerCount, rightDetected: visual.rightDetected, rightMode, fieldMode };
     setUi(current => current.leftDetected === nextUi.leftDetected && current.leftFingerCount === nextUi.leftFingerCount && current.rightDetected === nextUi.rightDetected && current.rightMode === rightMode && current.fieldMode === fieldMode ? current : nextUi);
     const bestHand = left ?? right;
@@ -342,7 +342,7 @@ export function useHandTracking({ reflectionActive, reflectionStep, onReflection
     const hands: NormalizedHand[] = [];
     for (const [index, landmarks] of result.landmarks.entries()) {
       const category = result.handedness?.[index]?.[0] ?? result.handednesses?.[index]?.[0];
-      if (!category || category.score < 0.5) continue;
+      if (!category || category.score < 0.5 || landmarks.length < 21) continue;
       // detectForVideo receives the raw camera video, not CSS-mirrored pixels.
       const side = mapMediaPipeHandedness(category.categoryName);
       if (!side) continue;

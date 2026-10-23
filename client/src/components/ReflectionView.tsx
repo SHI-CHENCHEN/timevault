@@ -62,15 +62,17 @@ export function ReflectionView({
   }[handMirror.status];
   const leftLabel = handMirror.ui.leftDetected && handMirror.ui.leftFingerCount >= 1 && handMirror.ui.leftFingerCount <= 3
     ? `LEFT / 0${handMirror.ui.leftFingerCount} ${REFLECTION_STEPS[handMirror.ui.leftFingerCount - 1].label}`
-    : "LEFT / 1–3 SELECT CHAPTER";
+    : "LEFT / 1–3 CHAPTER · PALM PUSH";
   const rightLabel = handMirror.ui.rightDetected
     ? `RIGHT / ${handMirror.ui.rightMode}`
-    : "RIGHT / OPEN–CLOSE FIELD";
+    : "RIGHT / OPEN · FIST · PINCH";
   const fieldLabel = {
     TIME_FILAMENT: "BOTH HANDS / TIME FILAMENT ACTIVE",
-    PUSH: "PALM / PUSH FRAGMENTS",
-    PULL: "PINCH / PULL FRAGMENTS",
-    AMBIENT: "MOVE HANDS INTO THE FIELD",
+    PUSH: "LEFT PALM / PUSH FRAGMENTS",
+    PULL: "RIGHT PINCH / PULL FRAGMENTS",
+    GATHER: "RIGHT FIST / GATHER INTO TIME CORE",
+    DISPERSE: "RIGHT OPEN / DISPERSE THE FIELD",
+    AMBIENT: handMirror.ui.rightDetected ? "RIGHT HAND / OPEN, FIST OR PINCH" : "MOVE HANDS INTO THE FIELD",
   }[handMirror.ui.fieldMode];
 
   const move = (direction: 1 | -1) => dispatch({ type: direction > 0 ? "INCREASE_DURATION" : "DECREASE_DURATION" });
@@ -156,6 +158,7 @@ export function ReflectionView({
           </span>
         </div>
         <div className="hand-mirror-panel__dwell" aria-hidden="true"><i style={{ width: `${handMirror.diagnostics.dwellProgress * 100}%` }} /></div>
+        <small className="hand-role-guide">LEFT / 1–3 CHAPTER · PALM PUSH<br />RIGHT / OPEN DISPERSE · FIST GATHER · PINCH PULL</small>
         {handMirror.enabled && handMirror.runtime ? <div className="hand-camera-health" role="status">
           <span>MODEL / {handMirror.runtime} · {handMirror.diagnostics.inferenceFps} FPS</span>
           <span>HANDS / {handMirror.diagnostics.detectedHandCount} OF 2 · VIDEO / {handMirror.cameraSize}</span>
@@ -176,7 +179,7 @@ export function ReflectionView({
       {handMirror.enabled && handMirror.showPreview ? <div className="hand-camera-guide" aria-hidden="true"><span>KEEP YOUR WHOLE HAND IN VIEW</span><i /><small>LOCAL LIVE PREVIEW / NOT RECORDED</small></div> : null}
 
       <div className="reflection-controls">
-        <span>{handMirror.enabled ? "LEFT 1–3 / CHAPTER · RIGHT / FIELD" : "SCROLL / ROTATE TO REFLECT"}</span>
+        <span>{handMirror.enabled ? "YOUR LEFT / CHAPTER + PUSH · YOUR RIGHT / SHAPE + PULL" : "SCROLL / ROTATE TO REFLECT"}</span>
         <Button variant="ghost" onClick={() => move(-1)}>PREVIOUS</Button>
         <Button variant="primary" onClick={() => dispatch({ type: "CONFIRM_TRANSACTION" })}>
           {step === 2 ? "RETURN TO THE VAULT" : "CONTINUE"}

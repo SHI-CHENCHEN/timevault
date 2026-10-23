@@ -13,8 +13,10 @@ fragments, and optional local hand gestures powered by Three.js and MediaPipe.
 - Buy Back: reclaim time and start an active-time countdown.
 - History and Reflection: revisit your time and explore the Hand Mirror.
 - Hand Mirror: explicitly activate the camera and allow permission. Use the left
-  hand's 1/2/3 fingers for chapters, and the right hand's open/closed palm or pinch
-  to affect the particle field. Camera processing stays in the browser: no camera
+  hand's 1/2/3 fingers for chapters and left palm to push. The right hand opens
+  to disperse, closes to gather the Time Core, and pinches to pull. A relaxed right
+  palm does not push; the left palm retains priority where the hands overlap.
+  Camera processing stays in the browser: no camera
   recording, image upload or remote inference is implemented.
 
 Chrome or Edge on a recent computer is recommended for WebGL and camera support.

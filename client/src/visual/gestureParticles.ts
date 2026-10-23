@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import type { HandMirrorVisualState } from "./types";
+import { handFieldPolicy } from "./handFieldPolicy";
 
 export interface GestureParticleContext {
   visible: boolean;
@@ -145,9 +146,7 @@ export class GestureParticleField {
     if (!this.group.visible) return;
 
     const delta = Math.min(0.034, deltaMs / 1000);
-    const openness = hand.active ? hand.rightOpenness : 0.48;
-    const coreWeight = hand.rightDetected ? clamp((0.43 - openness) / 0.34) : 0;
-    const disperseWeight = hand.rightDetected ? clamp((openness - 0.54) / 0.38) : 0;
+    const { coreWeight, disperseWeight, rightPullStrength } = handFieldPolicy(hand);
     const bothHands = hand.leftDetected && hand.rightDetected;
     const handSpan = bothHands ? Math.hypot(hand.rightPalmX - hand.leftPalmX, hand.rightPalmY - hand.leftPalmY) : 0;
     const filamentWeight = bothHands ? clamp(0.18 + handSpan * 0.22, 0, 0.42) : 0;
@@ -165,7 +164,9 @@ export class GestureParticleField {
     const rightPalmX = (hand.rightPalmX - 0.5) * this.viewportWidth;
     const rightPalmY = (0.5 - hand.rightPalmY) * this.viewportHeight;
     const leftStrength = hand.active ? hand.leftRepelStrength : 0;
-    const rightStrength = hand.active && hand.rightDetected ? 1.05 : 0;
+    // Only the left palm repels. The right hand attracts locally when pinched;
+    // open/fist poses change the whole shape instead of duplicating left-palm push.
+    const rightStrength = rightPullStrength;
     const spring = this.reducedMotion ? 8.2 : 7.1;
     const damping = this.reducedMotion ? 0.82 : 0.87 - hand.motionEnergy * 0.025;
     const count = this.visibleCount;
@@ -245,10 +246,15 @@ export class GestureParticleField {
         const palmX = handIndex === 0 ? leftPalmX : rightPalmX;
         const palmY = handIndex === 0 ? leftPalmY : rightPalmY;
         const strength = handIndex === 0 ? leftStrength : rightStrength;
-        const pinch = handIndex === 0 ? hand.leftPinch : hand.rightPinch;
         const motionX = handIndex === 0 ? hand.leftVelocityX : hand.rightVelocityX;
         const motionY = handIndex === 0 ? hand.leftVelocityY : hand.rightVelocityY;
         if (strength <= 0.015) continue;
+        if (handIndex === 1 && leftStrength > 0.015) {
+          const leftRadius = 0.4 + hand.leftPalmSize * 0.66 + leftStrength * 0.15 + hand.motionEnergy * 0.2;
+          const leftDx = this.positions[offset] - leftPalmX;
+          const leftDy = this.positions[offset + 1] - leftPalmY;
+          if (leftDx * leftDx + leftDy * leftDy < leftRadius * leftRadius) continue;
+        }
         const dx = this.positions[offset] - palmX;
         const dy = this.positions[offset + 1] - palmY;
         const palmSize = handIndex === 0 ? hand.leftPalmSize : hand.rightPalmSize;
@@ -257,7 +263,7 @@ export class GestureParticleField {
         if (distanceSquared >= radius * radius) continue;
         const distance = Math.max(0.025, Math.sqrt(distanceSquared));
         const falloff = 1 - distance / radius;
-        const direction = handIndex === 0 ? 1 : pinch >= 0.46 ? -1 : 1;
+        const direction = handIndex === 0 ? 1 : -1;
         const force = falloff * strength * (0.03 + hand.motionEnergy * 0.028) * direction;
         velocityX += (dx / distance) * force + motionX * falloff * 0.006;
         velocityY += (dy / distance) * force - motionY * falloff * 0.006;

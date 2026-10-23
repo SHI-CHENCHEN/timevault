@@ -1,5 +1,6 @@
 import { useEffect, useRef, type MutableRefObject, type RefObject } from "react";
 import type { HandMirrorStatus, HandMirrorVisualState } from "../visual/types";
+import { handFieldPolicy } from "../visual/handFieldPolicy";
 
 const CONNECTIONS = [
   [0, 1], [1, 2], [2, 3], [3, 4],
@@ -85,8 +86,8 @@ export function CameraBackdrop({
         context.stroke();
         context.restore();
       }
-      drawPresence(visual.leftDetected, visual.leftPalmX, visual.leftPalmY, visual.leftPalmSize, "rgba(185, 151, 244, 0.7)", "LEFT / PUSH");
-      drawPresence(visual.rightDetected, visual.rightPalmX, visual.rightPalmY, visual.rightPalmSize, "rgba(168, 184, 224, 0.65)", "RIGHT / FIELD");
+      drawPresence(visual.leftDetected, visual.leftPalmX, visual.leftPalmY, visual.leftPalmSize, "rgba(185, 151, 244, 0.7)", "LEFT / PUSH + CHAPTER");
+      drawPresence(visual.rightDetected, visual.rightPalmX, visual.rightPalmY, visual.rightPalmSize, "rgba(168, 184, 224, 0.65)", `RIGHT / ${handFieldPolicy(visual).rightMode}`);
 
       if (!debug) {
         frame = window.requestAnimationFrame(render);

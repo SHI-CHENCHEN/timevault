@@ -67,9 +67,9 @@ export class CoverSculpture {
     pmrem.dispose();
     surroundGeometry.dispose(); surroundMaterial.dispose(); cardGeometry.dispose(); cardMaterial.dispose();
 
-    const metal = new THREE.MeshPhysicalMaterial({ color: 0xbab6c5, metalness: 0.92, roughness: 0.28,
+    const metal = new THREE.MeshPhysicalMaterial({ color: 0x9993a2, metalness: 0.92, roughness: 0.28,
       envMap: this.environment.texture, envMapIntensity: 1.5, clearcoat: 0.55, clearcoatRoughness: 0.24 });
-    const warmMetal = metal.clone(); warmMetal.color.set(0xc7bed4); warmMetal.roughness = 0.22;
+    const warmMetal = metal.clone(); warmMetal.color.set(0xaaa0b6); warmMetal.roughness = 0.25;
     const graphite = new THREE.MeshPhysicalMaterial({ color: 0x24212d, metalness: 0.68, roughness: 0.34,
       envMap: this.environment.texture, envMapIntensity: 1.1, clearcoat: 0.45 });
     const glass = new THREE.MeshPhysicalMaterial({ color: 0xabb8cc, metalness: 0, roughness: 0.08,
@@ -210,7 +210,7 @@ export class CoverSculpture {
     const shadowCanvas = document.createElement("canvas"); shadowCanvas.width = shadowCanvas.height = 128;
     const context = shadowCanvas.getContext("2d")!;
     const gradient = context.createRadialGradient(64, 64, 12, 64, 64, 64);
-    gradient.addColorStop(0, "rgba(49,29,81,0.22)"); gradient.addColorStop(1, "rgba(49,29,81,0)");
+    gradient.addColorStop(0, "rgba(49,37,63,0.38)"); gradient.addColorStop(1, "rgba(49,37,63,0)");
     context.fillStyle = gradient; context.fillRect(0, 0, 128, 128);
     this.shadowTexture = new THREE.CanvasTexture(shadowCanvas);
     const shadowMaterial = new THREE.MeshBasicMaterial({ map: this.shadowTexture, transparent: true, depthWrite: false });
@@ -229,7 +229,7 @@ export class CoverSculpture {
     grainGradient.addColorStop(1, "rgba(255,255,255,0)");
     grainContext.fillStyle = grainGradient; grainContext.fillRect(0, 0, 32, 32);
     this.grainTexture = new THREE.CanvasTexture(grainCanvas);
-    const grainMaterial = new THREE.PointsMaterial({ map: this.grainTexture, color: 0xc2b0dd, size: 0.019,
+    const grainMaterial = new THREE.PointsMaterial({ map: this.grainTexture, color: 0x795493, size: 0.019,
       transparent: true, opacity: 0.78, alphaTest: 0.02, depthWrite: false });
     this.grainMaterial = grainMaterial;
     this.materials.push(grainMaterial);
@@ -247,11 +247,11 @@ export class CoverSculpture {
       if (!finish) {
         const physical = original.clone();
         if (original === glass) {
-          physical.color.set(0xc5d1e4); physical.opacity = 0.48; physical.transmission = 0.86;
-          physical.roughness = 0.055; physical.thickness = 0.1; physical.clearcoat = 1; physical.envMapIntensity = 1.8;
+          physical.color.set(0xa59bb5); physical.opacity = 0.34; physical.transmission = 0.72;
+          physical.roughness = 0.085; physical.thickness = 0.14; physical.clearcoat = 0.8; physical.envMapIntensity = 1.25;
         } else if (original === metal || original === warmMetal) {
-          physical.color.set(original === metal ? 0xd4d1dc : 0xcac3d8);
-          physical.roughness = 0.2; physical.clearcoat = 0.85; physical.clearcoatRoughness = 0.15; physical.envMapIntensity = 1.8;
+          physical.color.set(original === metal ? 0x9f98ab : 0xada3bb);
+          physical.roughness = 0.25; physical.clearcoat = 0.65; physical.clearcoatRoughness = 0.22; physical.envMapIntensity = 1.35;
         }
         finish = physical; finishes.set(original, finish); this.materials.push(finish);
       }

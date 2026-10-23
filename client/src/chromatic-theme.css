@@ -1,125 +1,125 @@
-/* TIMEVAULT / Silver in violet light.
+/* TIMEVAULT / Mineral silver / mist violet.
    Presentation only: retain every existing layout, state and input contract. */
 :root {
-  --void: #30273f;
-  --surface: #3c314e;
-  --surface-strong: #4a3b60;
-  --text: #faf6ff;
-  --muted: #ddd3eb;
-  --faint: #bfb0d0;
-  --line: #79668e;
-  --line-strong: #b9a1d1;
-  --blue: #b6ddff;
-  --violet: #d1a8ff;
-  --magenta: #ecc0f1;
-  --metal-cold: #e6dff0;
-  --metal-warm: #eee2ed;
-  --glass: #c5d4ed;
-  --graphite: #3b304e;
+  --void: #eae7ee;
+  --surface: #f4f1f6;
+  --surface-strong: #e1dbe7;
+  --text: #302737;
+  --muted: #61566c;
+  --faint: #6b5c76;
+  --line: #b8aebe;
+  --line-strong: #7e6b8f;
+  --blue: #446987;
+  --violet: #72528e;
+  --magenta: #8b6a99;
+  --metal-cold: #a9a1b1;
+  --metal-warm: #c4bdcb;
+  --glass: #9aa5b5;
+  --graphite: #e4dfe9;
 }
 
 body { background: var(--void); }
-::selection { background: #d5b7f5; color: #30203f; }
+::selection { background: #c9bbd9; color: #392c45; }
 .app {
-  --theme-ink: #faf6ff;
-  --theme-soft: #ddd3eb;
-  --theme-muted: #c7b9d7;
-  --theme-line: #79668e;
-  --theme-accent: #d7b4ff;
-  --theme-panel: #443653;
-  --theme-button: #d9b9fb;
-  --theme-button-ink: #30203f;
-  background: radial-gradient(ellipse at 67% 38%, #59466f 0%, #3b304e 46%, #30273f 100%);
+  --theme-ink: #302737;
+  --theme-soft: #61566c;
+  --theme-muted: #675771;
+  --theme-line: #b8aebe;
+  --theme-accent: #75558f;
+  --theme-panel: #e4dce9;
+  --theme-button: #584367;
+  --theme-button-ink: #fbf8ff;
+  background: linear-gradient(120deg, #f0edf3, #e8e3ed);
   color: var(--theme-ink);
 }
 .app::before { background-image: none; opacity: 0; }
-.app::after { border-color: #a58bb33d; box-shadow: inset 0 1px 0 #ffffff14; }
+.app::after { border-color: #8c799a33; box-shadow: inset 0 1px 0 #ffffff55; }
 .app .environment-art { display: none; }
 .app .screen-layer { box-shadow: none; }
 
-/* The vessel sits in an illuminated amethyst space, with a silver wordmark. */
+/* A quiet mineral backdrop; graphite-violet typography and a silver vessel. */
 .app.app--intro {
   background:
-    radial-gradient(ellipse at 70% 43%, #9a83b0 0%, #75608e 23%, transparent 54%),
-    linear-gradient(112deg, #362b48 0%, #4c3b60 48%, #544365 100%);
+    radial-gradient(ellipse at 69% 44%, #faf8fb 0%, #f1edf4 28%, transparent 59%),
+    linear-gradient(115deg, #ded7e5 0%, #eae4ef 47%, #e5dfea 100%);
 }
-.app--intro::after { box-shadow: inset 0 1px 0 #ffffff1c; }
-.intro-sequence::before { background: linear-gradient(108deg, transparent 38%, #efe0ff09 50%, transparent 62%); }
-.intro-sequence::after { background: radial-gradient(circle 260px at var(--pointer-x) var(--pointer-y), #ead1ff0d, transparent 76%); }
-.app--intro .digital-orbit-layer { opacity: 1; filter: saturate(0.95) brightness(1.16); }
+.app--intro::after { box-shadow: inset 0 1px 0 #ffffff66; }
+.intro-sequence::before, .intro-sequence::after { background: none; }
+.app--intro .digital-orbit-layer { opacity: 1; filter: saturate(0.7) contrast(1.08); }
 .app .intro-wordmark span b {
-  background-image: linear-gradient(108deg, #d7bee9 0%, #fffaff 24%, #dbbced 45%, #ffffff 58%, #ceb0e4 80%, #f4e9ff 100%);
-  filter: drop-shadow(0 2px 20px #21172f24);
+  background-image: linear-gradient(108deg, #50405f, #5d486c 55%, #51405e);
+  filter: none;
+  animation: none;
 }
-.app .intro-wordmark:hover span b { filter: brightness(1.06) drop-shadow(0 0 22px #e9c5ff22); }
-.intro-wordmark span b::before, .intro-wordmark span b::after { opacity: 0.06; }
+.app .intro-wordmark:hover span b { filter: brightness(0.9); }
+.intro-wordmark span b::before, .intro-wordmark span b::after { opacity: 0; }
 .app .intro-concept-line, .app .intro-link-status, .app .intro-subtitle,
 .app .intro-editorial, .app .intro-accumulation, .app .intro-reserve span,
 .app .intro-object-hint, .app .intro-object-hint small, .app .intro-weave-caption,
-.app .intro-weave-caption p, .app .intro-composition-mark, .app .intro-composition-mark p { color: #eee3f7; }
-.app .intro-concept-line i { color: #d0b8e3; }
-.intro-subtitle::before { background: #d4b9e7; }
+.app .intro-weave-caption p, .app .intro-composition-mark, .app .intro-composition-mark p { color: #675771; }
+.app .intro-concept-line i { color: #8b7897; }
+.intro-subtitle::before { background: #9885a5; }
 .app .intro-reserve strong, .app .intro-accumulation b,
-.app .intro-composition-mark strong, .app .intro-object-hint i { color: #fff7ff; }
-.intro-reserve, .intro-composition-mark { border-left-color: #e9d6ff55; }
-.intro-reserve::after { background: #e5cffc55; }
+.app .intro-composition-mark strong, .app .intro-object-hint i { color: #473650; }
+.intro-reserve, .intro-composition-mark { border-left-color: #8b779e55; }
+.intro-reserve::after { background: #8b779e55; }
 .app .intro-enter {
-  background: linear-gradient(110deg, #f0deff, #d3b2f1);
-  color: #342044; border: 1px solid #f4e6ff;
+  background: linear-gradient(110deg, #5d476d, #5d476d);
+  color: #fbf8ff; border: 1px solid #5d476d;
   box-shadow: 0 8px 32px #24133124, inset 0 1px 0 #ffffff9c;
 }
-.app .intro-enter > span small { color: #604673; }
-.app .intro-enter i { color: #462b5c; border-color: #87679f66; background: #ffffff38; }
-.app .intro-enter:hover { background: #f5eaff; border-color: #fff; box-shadow: 0 10px 36px #27163d38; }
+.app .intro-enter > span small { color: #eee5f3; }
+.app .intro-enter i { color: #fbf8ff; border-color: #f4e8ff66; background: #ffffff38; }
+.app .intro-enter:hover { background: #463454; border-color: var(--theme-ink); box-shadow: 0 10px 36px #27163d38; }
 .app .intro-actions button {
-  color: #faf2ff; background: #dfc9f30b; border-left-color: #d6b9f05c;
+  color: #4f3c5e; background: #5b436a06; border-left-color: #927fa64d;
 }
-.app .intro-actions button small { color: #dbcae8; }
+.app .intro-actions button small { color: #71617c; }
 .app .intro-actions button:hover, .app .intro-actions button:focus-visible {
-  background: #e4c9ff22; color: #fff; border-left-color: #efdcff;
+  background: #78608e12; color: var(--theme-ink); border-left-color: #6d517e;
 }
-.app .intro-actions button:nth-child(2):hover { background: #a6d6ff26; color: #e8f6ff; border-color: #b8dcff; }
-.app--intro .intro-vessel-feedback { color: #fff1ff; }
+.app .intro-actions button:nth-child(2):hover { background: #557b9b14; color: #345771; border-color: #6b91ae; }
+.app--intro .intro-vessel-feedback { color: #675471; }
 .app--intro .intro-vessel-tools button {
-  background: #443153c9; border-color: #ccb0e2; color: #fff4ff;
-  box-shadow: inset 0 1px 0 #ffffff12;
+  background: #f2edf5ed; border-color: #b3a1bf; color: #53405f;
+  box-shadow: inset 0 1px 0 #ffffff66;
 }
 .app--intro .intro-vessel-tools button:hover,
-.app--intro .intro-vessel-tools button[aria-pressed="true"] { background: #dec0f3; color: #392549; border-color: #f3dfff; }
+.app--intro .intro-vessel-tools button[aria-pressed="true"] { background: #ded3e6; color: #412d50; border-color: #876b9a; }
 
 /* Shared chrome stays legible over every state. */
 .app .identity-lockup strong, .app .reserve-signal strong { color: var(--theme-ink); }
-.app .identity-home:hover strong { color: #e8c9ff; }
+.app .identity-home:hover strong { color: #6b4d82; }
 .app .identity-lockup > span, .app .concept-sequence, .app .reserve-signal > span,
 .app .status-line, .app .status-line strong, .app .time-spine,
 .app .installation-rail, .app .installation-rail button, .app .demo-indicator { color: var(--theme-soft); }
 .app .concept-sequence i { color: var(--theme-muted); }
-.app .time-spine > div::before { background: #ddd0ed55; }
-.app .time-spine > div i, .app .time-spine > div i:nth-child(3n + 1) { background: #eadcf680; }
-.app .time-spine > div b { background: #efd4ff; box-shadow: 0 0 10px #d2a5ff66; }
+.app .time-spine > div::before { background: #9987aa55; }
+.app .time-spine > div i, .app .time-spine > div i:nth-child(3n + 1) { background: #9280a3aa; }
+.app .time-spine > div b { background: #76578e; box-shadow: 0 0 10px #76578e22; }
 .app .installation-rail { border-top-color: var(--theme-line); }
 .app .state-caption, .app .state-note, .app .eyebrow { color: var(--theme-soft); }
 .app .state-caption i { color: var(--theme-muted); }
 .app .state-caption::before { background: var(--theme-accent); }
 .app .button {
   color: var(--theme-ink); border-color: var(--theme-line);
-  background: #dfcaff0b; box-shadow: inset 0 1px 0 #ffffff0c;
+  background: #ffffff55; box-shadow: inset 0 1px 0 #ffffff99;
 }
-.app .button:hover { background: #e1c7ff22; border-color: var(--theme-accent); color: #fff; }
+.app .button:hover { background: #b9a3cd22; border-color: var(--theme-accent); color: var(--theme-ink); }
 .app .button--primary, .app .peripheral-actions .button--primary {
   color: var(--theme-button-ink); background: var(--theme-button);
-  border-color: var(--theme-button); box-shadow: 0 5px 22px #21142e24;
+  border-color: var(--theme-button); box-shadow: 0 5px 22px #42304d14;
 }
-.app .button--primary:hover, .app .peripheral-actions .button--primary:hover { background: #f1dfff; border-color: #f1dfff; color: #30203f; }
+.app .button--primary:hover, .app .peripheral-actions .button--primary:hover { background: #493355; border-color: #493355; color: #fbf8ff; }
 .app button:focus-visible, .app input:focus-visible { outline: 2px solid var(--theme-accent); outline-offset: 4px; }
 .app button:disabled { cursor: default; }
-.app .notice { color: #fff4ff; background: #51405f; border-color: #c9a5e0; }
+.app .notice { color: #53405f; background: #ece3f2; border-color: #9880a8; }
 
 /* Reserve home: visible instruments and clearly separated choices. */
 .app.app--idle.app--entered {
-  background: radial-gradient(ellipse at 69% 39%, #806694 0%, #4a3a60 34%, #32283f 76%);
+  background: radial-gradient(ellipse at 69% 39%, #faf8fc 0%, #e9e2ee 45%, #dfd8e7 100%);
 }
-.app--idle.app--entered .digital-orbit-layer { opacity: 1; filter: saturate(0.94) brightness(1.13); }
+.app--idle.app--entered .digital-orbit-layer { opacity: 1; filter: saturate(0.7) contrast(1.08); }
 .app .idle-statement h1, .app .idle-reserve-annotation strong,
 .app .account-summary strong, .app .mode-experience h1 { color: var(--theme-ink); }
 .app .idle-statement > span, .app .idle-statement > p,
@@ -127,55 +127,57 @@ body { background: var(--void); }
 .app .account-summary span { color: var(--theme-soft); }
 .app .idle-reserve-annotation, .app .account-summary { border-top-color: var(--theme-line); }
 .app--idle.app--entered .idle-actions > button {
-  color: #f9f2ff; background: #5f497577; border-color: #a88abb;
-  box-shadow: inset 0 1px 0 #ffffff14;
+  color: #3e304b; background: #ffffff55; border-color: #b5a5c0;
+  box-shadow: inset 0 1px 0 #ffffff55;
 }
-.app--idle .idle-actions > button span, .app--idle .idle-actions > button small { color: #e0cfea; }
-.app--idle .idle-actions > button:hover { background: #7b5c94; border-color: #d5b2ed; color: #fff; }
-.app--idle.app--entered .idle-actions > button:first-child { background: #d7b6f3; border-color: #eddaff; color: #352143; }
-.app--idle .idle-actions > button:first-child span, .app--idle .idle-actions > button:first-child small { color: #5d4272; }
-.app--idle.app--entered .idle-actions > button:nth-child(2) { background: #536d88; border-color: #9ec1e1; }
-.app--idle .idle-actions > button:nth-child(2):hover { background: #6685a3; border-color: #c2e3ff; }
+.app--idle .idle-actions > button span, .app--idle .idle-actions > button small { color: #73607f; }
+.app--idle .idle-actions > button:hover { background: #e0d5e8; border-color: #8b729d; color: var(--theme-ink); }
+.app--idle.app--entered .idle-actions > button:first-child { background: #604971; border-color: #604971; color: #fbf7ff; }
+.app--idle .idle-actions > button:first-child span, .app--idle .idle-actions > button:first-child small { color: #eee3f4; }
+.app--idle.app--entered .idle-actions > button:nth-child(2) { background: #dde6ed; border-color: #9baebb; }
+.app--idle .idle-actions > button:nth-child(2):hover { background: #cbd9e5; border-color: #7d99af; }
 
 /* Violet stores time; ice blue reclaims it. */
 .app:is(.app--mode_selection, .app--time_selection, .app--confirmation,
   .app--transaction_processing, .app--transaction_complete, .app--buyback_complete, .app--history) {
-  background: radial-gradient(ellipse at 52% 42%, #574367 0%, #3a2e4b 52%, #30273f 100%);
+  background: radial-gradient(ellipse at 52% 42%, #f8f5fa 0%, #eee8f2 52%, #e4dce9 100%);
 }
 .app.app--buy {
-  --theme-ink: #f3faff;
-  --theme-soft: #d0e4f3;
-  --theme-muted: #b3cfe4;
-  --theme-line: #6e91ad;
-  --theme-accent: #b3deff;
-  --theme-panel: #34516c;
-  --theme-button: #b9defa;
-  --theme-button-ink: #1e3b56;
-  background: radial-gradient(ellipse at 60% 40%, #476880 0%, #2d465f 48%, #24394f 100%);
+  --theme-ink: #293c4d;
+  --theme-soft: #4e6375;
+  --theme-muted: #53697c;
+  --theme-line: #a5b7c5;
+  --theme-accent: #4c718e;
+  --theme-panel: #e0e7ec;
+  --theme-button: #486b87;
+  --theme-button-ink: #f6faff;
+  background: radial-gradient(ellipse at 60% 40%, #f3f7fa 0%, #e7edf2 48%, #dde5ec 100%);
 }
 .app .selection-copy h1, .app .selection-readout > strong { color: var(--theme-ink); }
+.app :is(.selection-readout > strong, .time-option.is-selected,
+  .reflection-mirror__center strong) { text-shadow: none; }
 .app .selection-copy p, .app .selection-readout span, .app .selection-readout small,
 .app .selection-field, .app .selection-field > small, .app .selection-field > span i,
 .app .selector-instruction, .app .selector-step { color: var(--theme-soft); }
 .app .selection-readout small { border-top-color: var(--theme-line); }
 .app .selection-readout small b { color: var(--theme-accent); text-shadow: none; }
-.app--time_selection .digital-orbit-layer { opacity: 1; filter: saturate(1.1) brightness(1.2); }
+.app--time_selection .digital-orbit-layer { opacity: 1; filter: saturate(0.75) contrast(1.06); }
 .app .fragment-clock circle { stroke: var(--theme-line); }
-.app .fragment-clock line { stroke: #a68aba; }
-.app--buy .fragment-clock line { stroke: #9bbbd5; }
+.app .fragment-clock line { stroke: #9b87aa; }
+.app--buy .fragment-clock line { stroke: #8ca6ba; }
 .app .fragment-clock line.is-filled, .app .fragment-clock__sweep { stroke: var(--theme-accent); }
-.app .fragment-clock .fragment-clock__slot { fill: #c9a3ef12; stroke: var(--theme-line); }
-.app .fragment-clock .fragment-clock__slot.is-filled { fill: #d6b2f42e; stroke: var(--theme-accent); }
+.app .fragment-clock .fragment-clock__slot { fill: #8061980a; stroke: var(--theme-line); }
+.app .fragment-clock .fragment-clock__slot.is-filled { fill: #80619814; stroke: var(--theme-accent); }
 .app .fragment-clock__center, .app .fragment-clock__center small { color: var(--theme-soft); }
 .app .fragment-clock__center b { color: var(--theme-ink); }
 .app .selection-experience .time-options { border-top-color: var(--theme-line); }
 .app .selection-experience .time-option { color: var(--theme-soft); }
 .app .selection-experience .time-option.is-selected {
-  background: linear-gradient(180deg, #d8b8ff40, #d8b8ff08); color: var(--theme-ink);
+  background: linear-gradient(180deg, #9173aa24, #9173aa03); color: var(--theme-ink);
 }
-.app--buy .selection-experience .time-option.is-selected { background: linear-gradient(180deg, #a9d7ff40, #a9d7ff08); }
+.app--buy .selection-experience .time-option.is-selected { background: linear-gradient(180deg, #6f92ac24, #6f92ac03); }
 .app .time-option.is-selected strong, .app .time-option.is-selected span { color: var(--theme-ink); }
-.app .time-option.is-selected::before { background: var(--theme-accent); box-shadow: 0 0 18px #d4a1ff44; }
+.app .time-option.is-selected::before { background: var(--theme-accent); box-shadow: 0 0 18px #a28ab822; }
 
 /* Receipts, processing and protected time share the same material palette. */
 .app .screen-layer:is(.exchange-receipt, .transaction-outcome, .active-time),
@@ -209,78 +211,98 @@ body { background: var(--void); }
   border-color: var(--theme-accent); box-shadow: inset 0 1px 0 #ffffff66, 0 7px 24px #18112620;
 }
 .app .exchange-receipt .receipt-confirm:hover, .app .transaction-outcome .outcome-return:hover {
-  background: #eee0ff; color: #30203f; border-color: #f4e9ff;
+  background: #493355; color: #fbf8ff; border-color: #493355;
 }
-.app--buy .exchange-receipt .receipt-confirm:hover, .app--buy .transaction-outcome .outcome-return:hover { background: #e1f2ff; color: #1e3b56; }
+.app--buy .exchange-receipt .receipt-confirm:hover, .app--buy .transaction-outcome .outcome-return:hover { background: #355872; color: #f6faff; }
 .app :is(.receipt-confirm i, .receipt-confirm b, .outcome-return small) { color: var(--theme-button-ink); }
 .app .exchange-receipt .receipt-cancel { color: var(--theme-soft); border-color: var(--theme-line); }
-.app .exchange-receipt .receipt-cancel:hover { background: #ffffff12; border-color: var(--theme-accent); color: #fff; }
-.app .exchange-receipt > .receipt-message { color: #ffdcf0; }
-.app .active-time-clock__value time i, .app .active-time-clock__value small i { color: #b3d7f5; }
-.app .active-time .active-time-focus { background: #b9defa; color: #1e3b56; border-color: #d2edff; }
-.app .active-time .active-time-focus:hover { background: #e0f2ff; color: #1e3b56; }
+.app .exchange-receipt .receipt-cancel:hover { background: #ffffff66; border-color: var(--theme-accent); color: var(--theme-ink); }
+.app .exchange-receipt > .receipt-message { color: #8c405d; }
+.app .active-time-clock__value time i, .app .active-time-clock__value small i { color: #617f98; }
+.app .active-time .active-time-focus { background: #486b87; color: #f6faff; border-color: #486b87; }
+.app .active-time .active-time-focus:hover { background: #355872; color: #f6faff; }
 
 /* History reads as a luminous time atlas, including its smallest labels. */
 .app--history .history-experience--atlas { background: transparent; }
 .app--history .history-heading h1, .app--history .archive-reserve strong,
-.app--history .archive-memory > strong, .app--history .history-totals strong { color: #faf4ff; }
+.app--history .archive-memory > strong, .app--history .history-totals strong { color: #3c2e46; }
 .app--history :is(.archive-introduction > span, .archive-introduction p, .archive-reserve small,
   .archive-legend, .archive-memory time, .archive-memory > span, .archive-memory strong small,
   .archive-memory p, .archive-memory p i, .archive-memory > small,
-  .archive-scrubber > span, .history-totals span, .archive-node span, .empty-state) { color: #ded0eb; }
-.app--history :is(.archive-reserve, .archive-filters, .archive-record, .history-totals) { border-color: #8d729d; }
+  .archive-scrubber > span, .history-totals span, .archive-node span, .empty-state) { color: #6b5b77; }
+.app--history :is(.archive-reserve, .archive-filters, .archive-record, .history-totals) { border-color: #bcafc6; }
 .app--history .archive-dial svg circle, .app--history .archive-dial svg circle:nth-child(2),
-.app--history .archive-dial svg line { stroke: #a889bc; }
-.app--history .archive-node i { background: #b589de; border-color: #eed4ff; }
-.app--history .archive-node--buy i { background: #92bfdf; border-color: #c8e8ff; }
-.app--history .archive-node.is-active i { background: #efd7ff; box-shadow: 0 0 0 6px #d5acff30, 0 0 28px #c994ff66; }
-.app--history .archive-node.is-active span { color: #fff; }
-.app--history .archive-record { color: #dfceeb; }
-.app--history .archive-record > small { color: #c7b2d6; }
-.app--history .archive-record.is-active { color: #fff; background: linear-gradient(90deg, #c59be42b, #c59be40c); }
-.app--history .archive-record:hover { color: #fff; background: #d4b1ee20; }
-.app--history .archive-filters button, .app--history .archive-scrubber button { color: #e2d2ee; }
-.app--history .archive-filters button[aria-pressed="true"] { color: #fff; box-shadow: 0 2px 0 #d9b0ff; }
-.app--history .archive-scrubber input { accent-color: #dfbaff; opacity: 1; }
-.app--history .archive-list { scrollbar-color: #b58ed0 #3a2c47; }
+.app--history .archive-dial svg line { stroke: #a694b2; }
+.app--history .archive-node i { background: #8d6da6; border-color: #6d4e84; }
+.app--history .archive-node--buy i { background: #6d91ad; border-color: #507490; }
+.app--history .archive-node.is-active i { background: #65477c; box-shadow: 0 0 0 6px #9173aa20, 0 0 28px #9173aa30; }
+.app--history .archive-node.is-active span { color: var(--theme-ink); }
+.app--history .archive-record { color: #71607d; }
+.app--history .archive-record > small { color: #6b5878; }
+.app--history .archive-record.is-active { color: var(--theme-ink); background: linear-gradient(90deg, #9b7db529, #9b7db50c); }
+.app--history .archive-record:hover { color: var(--theme-ink); background: #9b7db518; }
+.app--history .archive-filters button, .app--history .archive-scrubber button { color: #71607d; }
+.app--history .archive-filters button[aria-pressed="true"] { color: var(--theme-ink); box-shadow: 0 2px 0 #77598e; }
+.app--history .archive-scrubber input { accent-color: #77598e; opacity: 1; }
+.app--history .archive-list { scrollbar-color: #9b83ab #e8e1ee; }
 
 /* Reflection keeps a deeper plum field so the original hand particles shine. */
 .app.app--reflection, .app.app--reflection.app--hand-mirror {
-  background: radial-gradient(ellipse at 57% 46%, #624377 0%, #382544 48%, #291e37 100%);
+  background: radial-gradient(ellipse at 57% 46%, #f4edf8 0%, #e9e0ef 48%, #dfd5e7 100%);
 }
 .app .reflection-experience { background: transparent; }
-.app--reflection .digital-orbit-layer, .app--hand-mirror .digital-orbit-layer { opacity: 1; filter: saturate(1.05) brightness(1.18); }
-.app--reflection .reflection-copy h1 { color: #fff5ff; }
+.app--reflection .digital-orbit-layer { opacity: 0; filter: none; }
+.app--reflection .reflection-copy h1 { color: #3e2e48; }
 .app--reflection :is(.reflection-copy p, .reflection-copy > span, .reflection-index,
-  .reflection-experience blockquote, .reflection-experience blockquote > span,
-  .reflection-footer, .reflection-mirror__center span, .reflection-mirror__center small) { color: #e5d6ef; }
-.app--reflection .reflection-mirror { border-color: #c49bd86b; background: radial-gradient(circle, #b983dd12, #3a234b55 61%, transparent 62%); }
-.app--reflection .reflection-mirror__center { background: #382343; border-color: #b992cf66; }
-.app--reflection .reflection-mirror__center strong { color: #faeaff; }
-.app--reflection .reflection-steps button { color: #e5d4f0; background: #78588b33; border-color: #af8dc2; }
-.app--reflection .reflection-steps button:hover, .app--reflection .reflection-steps button.is-active { background: #a375bd55; color: #fff; border-color: #e6bbff; }
-.app--reflection .reflection-steps button.is-active i { background: #e2baff; }
-.app--reflection .hand-mirror-panel { background: #493255e8; border-color: #b28ac6; box-shadow: 0 8px 32px #170f2322; }
+  .reflection-experience blockquote, .reflection-experience blockquote > span, .reflection-experience blockquote p,
+  .reflection-footer, .reflection-mirror__center span, .reflection-mirror__center small) { color: #6b5a76; }
+.app--reflection .reflection-mirror { border-color: #a994b966; background: radial-gradient(circle, #d5c5e055, #e8deef66 61%, transparent 62%); }
+.app--reflection .reflection-mirror__center { background: #f1eaf5; border-color: #ab94bc66; }
+.app--reflection .reflection-mirror__center strong { color: #4b3659; }
+.app--reflection .reflection-steps button { color: #675071; background: #ffffff66; border-color: #c4b2cd; }
+.app--reflection .reflection-steps button:hover, .app--reflection .reflection-steps button.is-active { background: #dfd3e8; color: var(--theme-ink); border-color: #8c6a9f; }
+.app--reflection .reflection-steps button.is-active i { background: #866298; }
+.app--reflection .hand-mirror-panel { background: #f5eff8ed; border-color: #b4a0c0; box-shadow: 0 8px 32px #49345410; }
 .app--reflection :is(.hand-mirror-panel__heading span, .hand-mirror-panel__heading strong,
   .hand-mirror-panel__heading em, .hand-mirror-panel__signals span, .hand-mirror-panel > p,
   .hand-mirror-panel small, .hand-mirror-panel__hint, .hand-camera-health,
-  .hand-camera-health small, .hand-camera-error strong, .hand-camera-error p) { color: #f0e2fa; }
-.app--reflection .hand-mirror-panel__signals span.is-detected { color: #c9e8ff; }
-.app--reflection .hand-mirror-panel__dwell { background: #ae88c455; }
-.app--reflection .hand-mirror-panel__dwell i { background: #edc9ff; }
-.app--reflection .hand-camera-health { border-color: #a881bb; }
-.app--reflection .hand-mirror-panel .button { color: #f8edff; border-color: #c09bd2; background: #79518e55; }
-.app--reflection .hand-mirror-panel .button:hover { background: #b684cf66; border-color: #e3bcf8; }
-.app--hand-mirror .reflection-experience { background: linear-gradient(90deg, #291a3bca, #291a3b08 48%, #291a3b66); }
-.app .intro-time-pulse { border-color: #e5b7ff; }
-.app .intro-time-pulse::after { background: #efd1ff; }
+  .hand-camera-health small, .hand-camera-error strong, .hand-camera-error p) { color: #675270; }
+.app--reflection .hand-mirror-panel__signals span.is-detected { color: #527996; }
+.app--reflection .hand-mirror-panel__dwell { background: #c7b3d255; }
+.app--reflection .hand-mirror-panel__dwell i { background: #77548c; }
+.app--reflection .hand-camera-health { border-color: #c2accf; }
+.app--reflection .hand-mirror-panel .button { color: #594366; border-color: #b4a1c0; background: #b69cc422; }
+.app--reflection .hand-mirror-panel .button:hover { background: #a98dbf33; border-color: #8f72a1; }
+.hand-role-guide { display: block; margin: 12px 0 6px; line-height: 1.9; letter-spacing: 0.045em; }
+/* The live particle canvas remains deep graphite for luminous hand art.
+   The existing camera guide and full-plane coordinates are preserved. */
+.app.app--reflection.app--hand-mirror {
+  --theme-ink: #f5edf9;
+  --theme-soft: #d4c8df;
+  --theme-muted: #c4b3d1;
+  --theme-line: #776582;
+  --theme-accent: #c9a9e0;
+  background: #241d2d;
+}
+.app--hand-mirror .reflection-experience { background: linear-gradient(90deg, #241d2dbb, #241d2d08 48%, #241d2d55); }
+.app--hand-mirror .digital-orbit-layer { opacity: 1; filter: none; }
+.app--hand-mirror .reflection-copy h1 { color: #f5edf9; }
+.app--hand-mirror :is(.reflection-copy p, .reflection-index, .reflection-experience blockquote,
+  .reflection-experience blockquote > span, .reflection-experience blockquote p,
+  .reflection-controls > span) { color: #d4c8df; }
+.app--hand-mirror .reflection-steps button { background: #3f304c; color: #d4c8df; border-color: #826991; }
+.app--hand-mirror .reflection-steps button:is(:hover, .is-active) { color: #fff5ff; background: #624875; }
+.app--hand-mirror .hand-mirror-panel { color: #584363; }
+.app--hand-mirror .hand-mirror-panel__signals span.is-detected { color: #4b6b84; }
+.app .intro-time-pulse { border-color: #74518d; }
+.app .intro-time-pulse::after { background: #74518d; }
 
 @media (max-width: 820px) {
   .app.app--intro {
-    background: radial-gradient(ellipse at 58% 58%, #9a7cb0 0%, #66517f 30%, transparent 60%), #3a2d4d;
+    background: radial-gradient(ellipse at 58% 58%, #f8f4fb, #e6deed 62%, #ded5e7);
   }
-  .app .intro-actions button small { color: #e8d9f3; }
-  .app .intro-actions button { background: #38294766; }
+  .app .intro-actions button small { color: #786384; }
+  .app .intro-actions button { background: #ffffff44; }
   .app .screen-layer:is(.exchange-receipt, .transaction-outcome, .active-time),
   .app .selection-experience { scrollbar-color: var(--theme-muted) transparent; }
 }

@@ -1,0 +1,41 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { Points, BufferGeometry, BufferAttribute } from "three";
+import { GestureParticleField } from "./gestureParticles";
+import { createHandMirrorVisualState, type HandMirrorVisualState } from "./types";
+
+beforeEach(() => vi.stubGlobal("document", { createElement: () => ({ getContext: () => null }) }));
+afterEach(() => vi.unstubAllGlobals());
+
+// The unavailable text canvas gives a deterministic spring target at the origin.
+// Compare one real particle with identical initial conditions to isolate forces.
+function particleX(patch: Partial<HandMirrorVisualState>) {
+  const field = new GestureParticleField(1, false);
+  field.setContext({ visible: true, step: 0, totalSold: 30, reserve: 30, totalRecovered: 0, countdownRemaining: null });
+  const points = field.group.children[0] as Points<BufferGeometry>;
+  const position = points.geometry.getAttribute("position") as BufferAttribute;
+  position.setXYZ(0, 0.2, 0, 0);
+  field.update(16, 100, { ...createHandMirrorVisualState(), active: true, ...patch });
+  const x = position.getX(0);
+  field.dispose();
+  return x;
+}
+
+describe("distinct physical-hand particle forces", () => {
+  it("a neutral right palm leaves a nearby particle on its normal spring path", () => {
+    const ambient = particleX({});
+    const right = particleX({ rightDetected: true, rightPalmX: 0.5, rightPalmY: 0.5 });
+    expect(right).toBeCloseTo(ambient, 7);
+  });
+  it("the left palm pushes while a right pinch pulls from the same location", () => {
+    const ambient = particleX({});
+    const left = particleX({ leftDetected: true, leftPalmX: 0.5, leftPalmY: 0.5, leftRepelStrength: 1 });
+    const right = particleX({ rightDetected: true, rightPalmX: 0.5, rightPalmY: 0.5, rightPinch: 1 });
+    expect(left).toBeGreaterThan(ambient);
+    expect(right).toBeLessThan(ambient);
+  });
+  it("a right pinch cannot cancel the left-palm push where the hands overlap", () => {
+    const left = { leftDetected: true, leftPalmX: 0.5, leftPalmY: 0.5, leftRepelStrength: 1 };
+    expect(particleX({ ...left, rightDetected: true, rightPalmX: 0.5, rightPalmY: 0.5, rightPinch: 1 }))
+      .toBeCloseTo(particleX(left), 7);
+  });
+});
