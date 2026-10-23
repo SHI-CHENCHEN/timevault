@@ -8,7 +8,7 @@ self.onmessage = async (event: MessageEvent<HandWorkerRequest>) => {
   const message = event.data;
   try {
     if (message.type === "init") {
-      const vision = await FilesetResolver.forVisionTasks(message.wasmPath);
+      const vision = message.vision ?? await FilesetResolver.forVisionTasks(message.wasmPath);
       const create = (delegate: "GPU" | "CPU") => HandLandmarker.createFromOptions(vision, {
         canvas: new OffscreenCanvas(640, 480),
         baseOptions: { modelAssetBuffer: message.model, delegate },

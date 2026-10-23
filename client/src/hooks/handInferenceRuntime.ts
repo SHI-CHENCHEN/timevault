@@ -1,5 +1,6 @@
 import type { HandLandmarkerResult } from "@mediapipe/tasks-vision";
 import type { HandWorkerRequest, HandWorkerResponse } from "./handInferenceProtocol";
+import type { HandVisionFileset } from "./handAssetLoader";
 
 export interface HandDetection {
   result: HandLandmarkerResult;
@@ -16,7 +17,7 @@ export interface HandDetector {
 
 type Pending = { resolve: (response: HandWorkerResponse) => void; reject: (error: Error) => void; timer: ReturnType<typeof setTimeout> };
 
-async function createBackgroundDetector(model: Uint8Array, wasmPath: string, signal: AbortSignal): Promise<HandDetector> {
+async function createBackgroundDetector(model: Uint8Array, wasmPath: string, signal: AbortSignal, vision?: HandVisionFileset): Promise<HandDetector> {
   // A classic, bundled worker also supports MediaPipe's importScripts WASM loader.
   const worker = new Worker(new URL("./handTracking.worker.ts", import.meta.url));
   let pending: Pending | null = null;
@@ -52,7 +53,7 @@ async function createBackgroundDetector(model: Uint8Array, wasmPath: string, sig
   };
   try {
     const copy = new Uint8Array(model);
-    const ready = await request({ type: "init", wasmPath, model: copy }, [copy.buffer], 25_000);
+    const ready = await request({ type: "init", wasmPath, model: copy, vision }, [copy.buffer], 25_000);
     if (ready.type !== "ready") throw new Error("HAND WORKER INITIALIZATION FAILED");
     return {
       delegate: ready.delegate, background: true, close,
@@ -69,15 +70,15 @@ async function createBackgroundDetector(model: Uint8Array, wasmPath: string, sig
   } catch (error) { close(); throw error; }
 }
 
-export async function createHandDetector(model: Uint8Array, wasmPath: string, signal: AbortSignal): Promise<HandDetector> {
+export async function createHandDetector(model: Uint8Array, wasmPath: string, signal: AbortSignal, preparedVision?: HandVisionFileset): Promise<HandDetector> {
   if (typeof Worker !== "undefined" && typeof OffscreenCanvas !== "undefined" && typeof createImageBitmap === "function") {
-    try { return await createBackgroundDetector(model, wasmPath, signal); }
+    try { return await createBackgroundDetector(model, wasmPath, signal, preparedVision); }
     catch (error) { if (signal.aborted) throw error; }
   }
   // Older Safari / embedded browsers keep the proven main-thread fallback.
   const { FilesetResolver, HandLandmarker } = await import("@mediapipe/tasks-vision");
   if (signal.aborted) throw new Error("SESSION_CANCELLED");
-  const vision = await FilesetResolver.forVisionTasks(wasmPath);
+  const vision = preparedVision ?? await FilesetResolver.forVisionTasks(wasmPath);
   if (signal.aborted) throw new Error("SESSION_CANCELLED");
   const create = (delegate: "GPU" | "CPU") => HandLandmarker.createFromOptions(vision, {
     baseOptions: { modelAssetBuffer: model, delegate }, runningMode: "VIDEO", numHands: 2,

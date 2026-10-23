@@ -14,6 +14,7 @@ describe("camera compatibility and asynchronous ownership", () => {
     expect(cameraErrorIssue({ name: "NotFoundError" }).code).toBe("NO_CAMERA");
     expect(cameraErrorIssue(new Error("MEDIAPIPE WASM TIMED OUT")).code).toBe("MODEL_START");
     expect(cameraErrorIssue(new Error("VIDEO FRAMES STOPPED")).code).toBe("VIDEO_NOT_READY");
+    expect(cameraErrorIssue(new Error("HAND ASSET STALLED: MODEL")).code).toBe("HAND_DOWNLOAD");
   });
   it("does not mistake an unanswered permission prompt for an opened camera", () => {
     expect(cameraErrorIssue(new Error("CAMERA REQUEST TIMED OUT")).code).toBe("CAMERA_PERMISSION_WAIT");

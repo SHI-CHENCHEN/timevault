@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState, type MutableRefObject, type R
 import type { HandLandmarkerResult, NormalizedLandmark } from "@mediapipe/tasks-vision";
 import type { ReflectionStep } from "@timevault/shared";
 import { createHandMirrorVisualState, type HandMirrorStatus, type HandMirrorVisualState, type HandSimulatorState, type HandTrackingDiagnostics } from "../visual/types";
-import { inspectHandModelBundle } from "./handModelAsset";
+import { loadHandAssets } from "./handAssetLoader";
 import { acquireSessionResource, cameraErrorIssue, cameraSupportIssue, type CameraIssue } from "./handCameraRuntime";
 import { advanceGestureMachine, createGestureMachineState, deriveHandMetrics, mapMediaPipeHandedness, projectCameraPoint, type CameraViewport, type GestureMachineState, type HandMetrics } from "./handTrackingMath";
 import { handFieldPolicy } from "../visual/handFieldPolicy";
@@ -411,16 +411,25 @@ export function useHandTracking({ reflectionActive, reflectionStep, onReflection
       }
       assertCurrent(); setCameraSize(`${video.videoWidth} × ${video.videoHeight}`);
       updateStatus("LOADING_HAND_MODEL");
-      setDetail("VERIFYING LOCAL MEDIAPIPE ASSETS");
-      const modelResponse = await withTimeout(fetch(HAND_MODEL_PATH, { cache: "reload", signal: abort.signal }), 18_000, "LOCAL HAND MODEL TIMED OUT");
-      assertCurrent();
-      if (!modelResponse.ok) throw new Error(`LOCAL HAND MODEL ${modelResponse.status}`);
-      const modelAssetBuffer = new Uint8Array(await withTimeout(modelResponse.arrayBuffer(), 18_000, "LOCAL HAND MODEL COULD NOT BE READ"));
-      assertCurrent();
-      const bundle = inspectHandModelBundle(modelAssetBuffer);
-      if (!bundle.valid) throw new Error(`LOCAL HAND MODEL IS INVALID (${bundle.reason})`);
-      setDetail("INITIALIZING MEDIAPIPE / LOCAL");
-      const landmarker = await acquireSessionResource(createHandDetector(modelAssetBuffer, new URL(MEDIAPIPE_WASM_PATH, window.location.href).href, abort.signal), 40_000, "HAND MODEL INITIALIZATION TIMED OUT", current, value => value.close());
+      setDetail("PREPARING HAND TRACKING / FIRST VISIT MAY TAKE A MOMENT");
+      const downloads = new Map<string, { loaded: number; total: number }>();
+      let reportedAt = 0;
+      const wasmPath = new URL(MEDIAPIPE_WASM_PATH, window.location.href).href;
+      const assets = await loadHandAssets(HAND_MODEL_PATH, wasmPath, abort.signal, value => {
+        if (!current()) return;
+        downloads.set(value.label, value);
+        const now = performance.now();
+        if (now - reportedAt < 200) return;
+        reportedAt = now;
+        const loaded = [...downloads.values()].reduce((sum, item) => sum + item.loaded, 0);
+        setDetail(`DOWNLOADING HAND TRACKING / ${(loaded / 1_048_576).toFixed(1)} MB · KEEP THIS TAB OPEN`);
+      });
+      let landmarker: HandDetector;
+      try {
+        assertCurrent();
+        setDetail("STARTING HAND TRACKING / DOWNLOAD COMPLETE");
+        landmarker = await acquireSessionResource(createHandDetector(assets.model, wasmPath, abort.signal, assets.vision), 40_000, "HAND MODEL INITIALIZATION TIMED OUT", current, value => value.close());
+      } finally { assets.dispose(); }
       assertCurrent(); setRuntime(landmarker.delegate);
       timingRef.current = { inferenceMs: 0, sampleAgeMs: 0, backgroundInference: landmarker.background };
       landmarkerRef.current = landmarker;
@@ -432,6 +441,7 @@ export function useHandTracking({ reflectionActive, reflectionStep, onReflection
       let lastFrameAt = performance.now();
       const pacer = new HandFramePacer();
       let warmedUp = false;
+      let staleSamples = 0;
       let frameEpoch = 0;
       const fail = (error: unknown) => {
         if (!current()) return;
@@ -472,7 +482,13 @@ export function useHandTracking({ reflectionActive, reflectionStep, onReflection
           if (!current() || document.hidden || epoch !== frameEpoch) return;
           const receivedAt = performance.now();
           timingRef.current = { inferenceMs: detection.inferenceMs, sampleAgeMs: receivedAt - detection.capturedAt, backgroundInference: landmarker.background };
-          if (!isFreshHandSample(detection.capturedAt, receivedAt)) { applyHands([], receivedAt); return; }
+          if (!isFreshHandSample(detection.capturedAt, receivedAt, detection.inferenceMs)) {
+            applyHands([], receivedAt);
+            if (++staleSamples >= 4) setDetail("HAND TRACKING IS SLOW / CLOSE OTHER HEAVY TABS OR TRY CHROME");
+            return;
+          }
+          if (staleSamples >= 4) setDetail(null);
+          staleSamples = 0;
           applyResult(detection.result, detection.capturedAt);
           if (!warmedUp && receivedAt >= gestureRef.current.warmupUntil) { warmedUp = true; setDetail(null); }
         }).catch(fail);

@@ -36,6 +36,12 @@ describe("fresh-frame hand scheduling", () => {
     expect(isFreshHandSample(100, 401)).toBe(false);
     expect(isFreshHandSample(101, 100)).toBe(false);
   });
+
+  it("accepts slower CPU inference without admitting queued or unbounded old results", () => {
+    expect(isFreshHandSample(100, 750, 620)).toBe(true);
+    expect(isFreshHandSample(100, 750, 20)).toBe(false);
+    expect(isFreshHandSample(100, 1500, 1400)).toBe(false);
+  });
 });
 
 describe("time-based hand response", () => {

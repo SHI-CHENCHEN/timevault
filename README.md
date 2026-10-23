@@ -23,6 +23,10 @@ Chrome or Edge on a recent computer is recommended for WebGL and camera support.
 Use the HTTPS website directly, not an embedded social-app preview. Unsupported
 or denied cameras retain the existing mouse/keyboard controls.
 
+Hand tracking shows download progress on first use and reuses the browser cache.
+Slow downloads may continue while bytes arrive; startup waits for the complete
+local model/runtime. Slower CPU results are accepted with a bounded age allowance.
+
 On supported browsers, hand detection runs in a local GPU/CPU Web Worker so it
 does not block the particle animation. Only the latest frame is processed, with
 one frame in flight and a 30 FPS ceiling; older browsers use the paced compatible

@@ -52,6 +52,13 @@ describe("background detector lifecycle", () => {
     await expect(first).rejects.toThrow("SESSION_CANCELLED");
   });
 
+  it("passes the completely downloaded local runtime to the worker", async () => {
+    const vision = { wasmBinaryPath: "blob:local-wasm", wasmLoaderPath: "blob:local-loader" };
+    const detector = await createHandDetector(new Uint8Array([1]), "/mediapipe", new AbortController().signal, vision);
+    expect(TestWorker.instances[0].messages[0]).toMatchObject({ type: "init", vision });
+    detector.close();
+  });
+
   it("cancels initialization immediately on stop/remount, with no fallback or leaked worker", async () => {
     TestWorker.autoReady = false;
     const abort = new AbortController();

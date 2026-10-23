@@ -37,6 +37,9 @@ export function palmSmoothingMs(distance: number): number {
   return 50 - Math.min(1, distance / 0.045) * 28;
 }
 
-export function isFreshHandSample(capturedAt: number, now: number): boolean {
-  return now >= capturedAt && now - capturedAt <= MAX_HAND_SAMPLE_AGE_MS;
+export function isFreshHandSample(capturedAt: number, now: number, inferenceMs = 0): boolean {
+  // One frame is in flight, with no queue. A slower CPU still needs to deliver
+  // its result; reject transport backlog rather than every slow-device sample.
+  const budget = Math.max(MAX_HAND_SAMPLE_AGE_MS, Math.min(1200, inferenceMs + 100));
+  return now >= capturedAt && now - capturedAt <= budget;
 }

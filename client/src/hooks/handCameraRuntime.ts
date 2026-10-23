@@ -20,6 +20,7 @@ export function cameraErrorIssue(error: unknown): CameraIssue {
   if (name === "NotFoundError") return { code: "NO_CAMERA", message: "No usable camera was found.", recovery: "Connect a camera and reopen the page, or use manual controls." };
   if (name === "NotReadableError" || name === "AbortError") return { code: "CAMERA_BUSY", message: "The camera could not be read.", recovery: "Close other camera apps or tabs, check the system camera permission, then retry." };
   if (name === "OverconstrainedError") return { code: "CAMERA_FORMAT", message: "The requested camera format is unavailable.", recovery: "Try a different camera, or reopen this link in your full browser." };
+  if (/HAND ASSET/.test(message)) return { code: "HAND_DOWNLOAD", message: "The hand-tracking download was interrupted or could not be verified.", recovery: "Keep this HTTPS page open and select Retry. Completed runtime files are cached; a progressing download can take longer on a slow connection." };
   if (/CAMERA|VIDEO|FRAME/.test(message)) return { code: "VIDEO_NOT_READY", message: "The camera opened, but usable video frames stopped or did not arrive.", recovery: "Keep this tab visible, close other camera apps and retry. No video is uploaded." };
   return { code: "MODEL_START", message: "The local hand model could not start.", recovery: "Check the network, reload this HTTPS page and retry. Camera access alone does not mean recognition is running." };
 }
