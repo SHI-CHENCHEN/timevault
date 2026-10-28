@@ -15,6 +15,8 @@ export function IntroSequence({
   coverControlRef: MutableRefObject<CoverControlState>;
 }) {
   const enterRef = useRef<HTMLButtonElement>(null);
+  const wordmarkRef = useRef<HTMLButtonElement>(null);
+  const wordmarkTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const drag = useRef<{ x: number; y: number; yaw: number; pitch: number; lastX: number; lastAt: number; moved: boolean } | null>(null);
   const [paused, setPaused] = useState(coverControlRef.current.flowPaused);
   const [reversed, setReversed] = useState(coverControlRef.current.flowDirection === -1);
@@ -27,6 +29,7 @@ export function IntroSequence({
   };
   useEffect(() => () => {
     if (feedbackTimer.current) clearTimeout(feedbackTimer.current);
+    if (wordmarkTimer.current) clearTimeout(wordmarkTimer.current);
     Object.assign(coverControlRef.current, createCoverControlState());
   }, [coverControlRef]);
   const finishExploration = (cancelled = false) => {
@@ -62,6 +65,32 @@ export function IntroSequence({
     enterRef.current?.style.setProperty("--magnet-x", "0px");
     enterRef.current?.style.setProperty("--magnet-y", "0px");
   };
+  const moveWordmark = (event: PointerEvent<HTMLButtonElement>) => {
+    const title = event.currentTarget;
+    const bounds = title.getBoundingClientRect();
+    const x = Math.max(0, Math.min(1, (event.clientX - bounds.left) / Math.max(1, bounds.width)));
+    const y = Math.max(0, Math.min(1, (event.clientY - bounds.top) / Math.max(1, bounds.height)));
+    title.style.setProperty("--title-light-x", `${x * 100}%`);
+    title.style.setProperty("--title-shift-x", `${(x - 0.5) * 12}px`);
+    title.style.setProperty("--title-shift-y", `${(y - 0.5) * 8}px`);
+  };
+  const resetWordmark = () => {
+    const title = wordmarkRef.current;
+    if (!title) return;
+    title.style.setProperty("--title-light-x", "50%");
+    title.style.setProperty("--title-shift-x", "0px");
+    title.style.setProperty("--title-shift-y", "0px");
+  };
+  const illuminateWordmark = () => {
+    const title = wordmarkRef.current;
+    if (!title) return;
+    if (wordmarkTimer.current) clearTimeout(wordmarkTimer.current);
+    title.dataset.illuminated = "true";
+    wordmarkTimer.current = setTimeout(() => {
+      delete title.dataset.illuminated;
+      wordmarkTimer.current = null;
+    }, 900);
+  };
 
   return (
     <section className="intro-sequence" aria-label="TIMEVAULT introduction">
@@ -69,10 +98,13 @@ export function IntroSequence({
         <span>FRAGMENTED TIME</span><i>01</i><span>ACCUMULATION</span><i>02</i><span>RESERVE</span>
       </div>
 
-      <div className="intro-wordmark" role="img" aria-label="TIMEVAULT">
+      <button ref={wordmarkRef} type="button" className="intro-wordmark"
+        aria-label="TIMEVAULT — illuminate title" title="Move to catch the light · click to illuminate"
+        onPointerMove={moveWordmark} onPointerLeave={resetWordmark} onPointerCancel={resetWordmark}
+        onPointerDown={moveWordmark} onClick={illuminateWordmark} onBlur={resetWordmark}>
         <span className="intro-wordmark__time" aria-hidden="true"><b data-text="TIME">TIME</b></span>
         <span className="intro-wordmark__vault" aria-hidden="true"><b data-text="VAULT">VAULT</b></span>
-      </div>
+      </button>
       <p className="intro-subtitle">A SPECULATIVE TIME EXCHANGE SYSTEM</p>
 
       <div className="intro-reserve" aria-label={`Time reserve ${formatMinutes(snapshot.account.timeReserve)}`}>
