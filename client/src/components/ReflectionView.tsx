@@ -169,7 +169,8 @@ export function ReflectionView({
         <small>LOCAL PROCESSING / NO RECORDING / NO UPLOAD</small>
         {handMirror.enabled ? (
           <div className="hand-camera-actions"><Button variant="ghost" onClick={handMirror.stop}>STOP CAMERA</Button>
-            <Button variant="ghost" aria-pressed={handMirror.showPreview} onClick={handMirror.togglePreview}>{handMirror.showPreview ? "HIDE CAMERA GUIDE" : "SHOW CAMERA GUIDE"}</Button></div>
+            <Button variant="ghost" aria-pressed={handMirror.showPreview} onClick={handMirror.togglePreview}>{handMirror.showPreview ? "HIDE CAMERA GUIDE" : "SHOW CAMERA GUIDE"}</Button>
+            {handMirror.runtime === "GPU" ? <Button variant="ghost" onClick={() => void handMirror.activate(true)}>COMPATIBILITY MODE</Button> : null}</div>
         ) : (
           <Button variant="ghost" onClick={() => void handMirror.activate()}>
             {handMirror.status === "CAMERA_UNAVAILABLE" ? "RETRY HAND MIRROR" : "ACTIVATE HAND MIRROR"}

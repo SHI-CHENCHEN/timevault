@@ -38,6 +38,14 @@ path. Position/open-palm filtering is time-based rather than detection-count
 based. The deliberate chapter dwell/release gate is unchanged. In non-exhibition mode, Shift+D diagnostics
 show inference cost, frame-to-result age and the active processing thread.
 
+Camera delivery uses an animation-frame heartbeat, so an embedded browser's
+stalled video-frame callback cannot silently stop recognition. If the worker
+fails or its GPU video upload stalls, tracking retries once with direct-video
+CPU inference while retaining the camera. The runtime assets stay valid for
+that entire session and are released on stop or exit. If GPU tracking starts
+but does not recognise a visible hand, select **COMPATIBILITY MODE** beside
+the camera controls to start the direct-video path explicitly.
+
 The public version is standalone. Time account/history data is saved locally per
 browser and origin, not shared between visitors. Previous Sites-domain data does
 not automatically transfer to this GitHub Pages domain. This is an interactive

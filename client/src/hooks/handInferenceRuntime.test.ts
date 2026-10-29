@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createHandDetector } from "./handInferenceRuntime";
+import { HandLandmarker } from "@mediapipe/tasks-vision";
 import type { HandWorkerRequest, HandWorkerResponse } from "./handInferenceProtocol";
 
 const fallback = vi.hoisted(() => ({ close: vi.fn(), detectForVideo: vi.fn(() => ({ landmarks: [], handedness: [], handednesses: [], worldLandmarks: [] })) }));
@@ -93,13 +94,73 @@ describe("background detector lifecycle", () => {
     detector.close(); expect(fallback.close).toHaveBeenCalledOnce();
   });
 
-  it("times out unresponsive worker frames and permits cleanup", async () => {
+  it("recovers a stalled worker using direct video on CPU without reopening the camera", async () => {
     vi.useFakeTimers();
     const detector = await createHandDetector(new Uint8Array([1]), "/mediapipe", new AbortController().signal);
     const detection = detector.detect({} as HTMLVideoElement, 20);
-    const rejection = expect(detection).rejects.toThrow("TIMED OUT");
     await vi.advanceTimersByTimeAsync(5000);
-    await rejection; detector.close();
+    expect(await detection).toMatchObject({ result: { landmarks: [] } });
+    expect(detector.delegate).toBe("CPU");
+    expect(detector.background).toBe(false);
     expect(TestWorker.instances[0].terminate).toHaveBeenCalledOnce();
+    expect(TestWorker.instances).toHaveLength(1);
+    expect(HandLandmarker.createFromOptions).toHaveBeenLastCalledWith(expect.anything(), expect.objectContaining({ baseOptions: expect.objectContaining({ delegate: "CPU" }) }));
+    detector.close();
+  });
+
+  it("recovers a GPU frame upload failure and resamples the current video", async () => {
+    const vision = { wasmBinaryPath: "blob:session-wasm", wasmLoaderPath: "blob:session-loader" };
+    const detector = await createHandDetector(new Uint8Array([1]), "/mediapipe", new AbortController().signal, vision);
+    const video = {} as HTMLVideoElement;
+    const detection = detector.detect(video, -100);
+    await Promise.resolve(); await Promise.resolve();
+    TestWorker.instances[0].respond({ type: "error", message: "WebGL context lost" });
+    const result = await detection;
+    expect(result.capturedAt).toBeGreaterThanOrEqual(0);
+    expect(fallback.detectForVideo).toHaveBeenLastCalledWith(video, result.capturedAt);
+    expect(detector.delegate).toBe("CPU");
+    expect(HandLandmarker.createFromOptions).toHaveBeenLastCalledWith(vision, expect.objectContaining({ baseOptions: expect.objectContaining({ delegate: "CPU" }) }));
+    detector.close();
+  });
+
+  it("allows an explicit compatible start without opening a worker", async () => {
+    const detector = await createHandDetector(new Uint8Array([1]), "/mediapipe", new AbortController().signal, undefined, true);
+    expect(TestWorker.instances).toHaveLength(0);
+    expect(detector.delegate).toBe("CPU");
+    detector.close();
+  });
+
+  it("does not reopen a detector when an in-flight session is cancelled", async () => {
+    const abort = new AbortController();
+    const detector = await createHandDetector(new Uint8Array([1]), "/mediapipe", abort.signal);
+    const detection = detector.detect({} as HTMLVideoElement, 10);
+    const rejection = expect(detection).rejects.toThrow("SESSION_CANCELLED");
+    await Promise.resolve(); await Promise.resolve();
+    abort.abort(); await rejection;
+    expect(HandLandmarker.createFromOptions).not.toHaveBeenCalled();
+    detector.close();
+  });
+
+  it("closes a compatible detector that finishes initializing after stop", async () => {
+    let ready!: (value: HandLandmarker) => void;
+    vi.mocked(HandLandmarker.createFromOptions).mockImplementationOnce(() => new Promise(resolve => { ready = resolve; }));
+    const detector = await createHandDetector(new Uint8Array([1]), "/mediapipe", new AbortController().signal);
+    const detection = detector.detect({} as HTMLVideoElement, 10);
+    const rejection = expect(detection).rejects.toThrow("SESSION_CANCELLED");
+    await Promise.resolve(); await Promise.resolve();
+    TestWorker.instances[0].respond({ type: "error", message: "WebGL context lost" });
+    await vi.waitFor(() => expect(ready).toBeTypeOf("function"));
+    detector.close(); ready(fallback as unknown as HandLandmarker); await rejection;
+    expect(fallback.close).toHaveBeenCalledOnce();
+    expect(fallback.detectForVideo).not.toHaveBeenCalled();
+  });
+
+  it("does not repeat a failed CPU backend and keeps compatible teardown idempotent", async () => {
+    const detector = await createHandDetector(new Uint8Array([1]), "/mediapipe", new AbortController().signal, undefined, true);
+    fallback.detectForVideo.mockImplementationOnce(() => { throw new Error("CPU DETECTOR FAILED"); });
+    await expect(detector.detect({} as HTMLVideoElement, 10)).rejects.toThrow("CPU DETECTOR FAILED");
+    expect(HandLandmarker.createFromOptions).toHaveBeenCalledOnce();
+    detector.close(); detector.close();
+    expect(fallback.close).toHaveBeenCalledOnce();
   });
 });

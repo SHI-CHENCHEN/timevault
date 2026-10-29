@@ -9,6 +9,7 @@ import { advanceGestureMachine, createGestureMachineState, deriveHandMetrics, ma
 import { handFieldPolicy } from "../visual/handFieldPolicy";
 import { createHandDetector, type HandDetector } from "./handInferenceRuntime";
 import { HAND_SAMPLE_INTERVAL_MS, HandFramePacer, isFreshHandSample, palmSmoothingMs, smoothHandValue } from "./handTrackingTiming";
+import { cameraFrameToken, startHandVideoLoop } from "./handVideoLoop";
 
 export interface HandMirrorUiSummary {
   leftDetected: boolean;
@@ -32,7 +33,7 @@ export interface HandTrackingController {
   simulator: HandSimulatorState;
   videoRef: RefObject<HTMLVideoElement | null>;
   visualRef: MutableRefObject<HandMirrorVisualState>;
-  activate: () => Promise<void>;
+  activate: (compatibility?: boolean) => Promise<void>;
   stop: () => void;
   setSimulator: (patch: Partial<HandSimulatorState>) => void;
   resetSimulator: () => void;
@@ -157,12 +158,12 @@ export function useHandTracking({ reflectionActive, reflectionStep, onReflection
   const visualRef = useRef<HandMirrorVisualState>(createHandMirrorVisualState());
   const streamRef = useRef<MediaStream | null>(null);
   const landmarkerRef = useRef<HandDetector | null>(null);
-  const frameRef = useRef<number | null>(null);
   const runIdRef = useRef(0);
   const activeRef = useRef(reflectionActive);
   const startingRef = useRef(false);
   const abortRef = useRef<AbortController | null>(null);
-  const videoFrameRef = useRef<number | null>(null);
+  const videoLoopCleanupRef = useRef<(() => void) | null>(null);
+  const assetCleanupRef = useRef<(() => void) | null>(null);
   const watchdogRef = useRef<number | null>(null);
   const trackCleanupRef = useRef<(() => void) | null>(null);
   const timingRef = useRef({ inferenceMs: 0, sampleAgeMs: 0, backgroundInference: false });
@@ -202,15 +203,13 @@ export function useHandTracking({ reflectionActive, reflectionStep, onReflection
     runIdRef.current += 1;
     startingRef.current = false;
     abortRef.current?.abort(); abortRef.current = null;
-    if (videoFrameRef.current !== null) videoRef.current?.cancelVideoFrameCallback?.(videoFrameRef.current);
-    videoFrameRef.current = null;
+    videoLoopCleanupRef.current?.(); videoLoopCleanupRef.current = null;
     if (watchdogRef.current !== null) window.clearInterval(watchdogRef.current);
     watchdogRef.current = null;
     trackCleanupRef.current?.(); trackCleanupRef.current = null;
-    if (frameRef.current !== null) window.cancelAnimationFrame(frameRef.current);
-    frameRef.current = null;
     landmarkerRef.current?.close();
     landmarkerRef.current = null;
+    assetCleanupRef.current?.(); assetCleanupRef.current = null;
     streamRef.current?.getTracks().forEach((track) => track.stop());
     streamRef.current = null;
     if (videoRef.current) {
@@ -364,8 +363,8 @@ export function useHandTracking({ reflectionActive, reflectionStep, onReflection
     releaseResources(true);
   }, [releaseResources]);
 
-  const activate = useCallback(async () => {
-    if (!activeRef.current || enabled || streamRef.current || startingRef.current) return;
+  const activate = useCallback(async (compatibility = false) => {
+    if (!activeRef.current || startingRef.current || ((enabled || streamRef.current) && !compatibility)) return;
     const policy = (document as Document & { permissionsPolicy?: { allowsFeature: (feature: string) => boolean }; featurePolicy?: { allowsFeature: (feature: string) => boolean } }).permissionsPolicy
       ?? (document as Document & { featurePolicy?: { allowsFeature: (feature: string) => boolean } }).featurePolicy;
     const support = cameraSupportIssue({ secure: window.isSecureContext, media: Boolean(navigator.mediaDevices?.getUserMedia), wasm: typeof WebAssembly !== "undefined", policy: !policy || policy.allowsFeature("camera") });
@@ -385,6 +384,7 @@ export function useHandTracking({ reflectionActive, reflectionStep, onReflection
     previousHandsRef.current.left.at = 0; previousHandsRef.current.right.at = 0;
     setEnabled(true);
     setDetail(null); setFailure(null); setRuntime(null);
+    setUi(DEFAULT_UI); setDiagnostics(DEFAULT_DIAGNOSTICS);
     updateStatus("REQUESTING_CAMERA");
     try {
       const openCamera = async () => {
@@ -427,12 +427,12 @@ export function useHandTracking({ reflectionActive, reflectionStep, onReflection
         const loaded = [...downloads.values()].reduce((sum, item) => sum + item.loaded, 0);
         setDetail(`DOWNLOADING HAND TRACKING / ${(loaded / 1_048_576).toFixed(1)} MB · KEEP THIS TAB OPEN`);
       });
-      let landmarker: HandDetector;
-      try {
-        assertCurrent();
-        setDetail("STARTING HAND TRACKING / DOWNLOAD COMPLETE");
-        landmarker = await acquireSessionResource(createHandDetector(assets.model, wasmPath, abort.signal, assets.vision), 40_000, "HAND MODEL INITIALIZATION TIMED OUT", current, value => value.close());
-      } finally { assets.dispose(); }
+      if (!current()) { assets.dispose(); assertCurrent(); }
+      // Runtime recovery may initialize a CPU detector later in this session.
+      // Its local WASM URLs must remain valid until the detector is closed.
+      assetCleanupRef.current = assets.dispose;
+      setDetail("STARTING HAND TRACKING / DOWNLOAD COMPLETE");
+      const landmarker = await acquireSessionResource(createHandDetector(assets.model, wasmPath, abort.signal, assets.vision, compatibility), 40_000, "HAND MODEL INITIALIZATION TIMED OUT", current, value => value.close());
       assertCurrent(); setRuntime(landmarker.delegate);
       timingRef.current = { inferenceMs: 0, sampleAgeMs: 0, backgroundInference: landmarker.background };
       landmarkerRef.current = landmarker;
@@ -446,6 +446,7 @@ export function useHandTracking({ reflectionActive, reflectionStep, onReflection
       let warmedUp = false;
       let staleSamples = 0;
       let frameEpoch = 0;
+      let reportedRuntime = landmarker.delegate;
       const fail = (error: unknown) => {
         if (!current()) return;
         releaseResources(false); setEnabled(false); setShowPreview(false);
@@ -466,17 +467,11 @@ export function useHandTracking({ reflectionActive, reflectionStep, onReflection
         stream.getVideoTracks().forEach(track => track.removeEventListener("ended", ended));
         document.removeEventListener("visibilitychange", visibilityChanged);
       };
-      const schedule = () => {
-        if (!current()) return;
-        if (video.requestVideoFrameCallback) videoFrameRef.current = video.requestVideoFrameCallback(now => detect(now));
-        else frameRef.current = window.requestAnimationFrame(detect);
-      };
       const detect = (_frameTime: number) => {
         if (!current()) return;
-        schedule();
         if (document.hidden || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) return;
         const now = performance.now();
-        if (!pacer.begin(now, video.currentTime)) return;
+        if (!pacer.begin(now, cameraFrameToken(video, now))) return;
         lastFrameAt = now;
         const epoch = frameEpoch;
         // One in-flight frame only. Skip arriving frames while busy instead of
@@ -484,6 +479,7 @@ export function useHandTracking({ reflectionActive, reflectionStep, onReflection
         void landmarker.detect(video, now).then(detection => {
           pacer.complete(detection.inferenceMs, landmarker.background);
           if (!current() || document.hidden || epoch !== frameEpoch) return;
+          if (reportedRuntime !== landmarker.delegate) { reportedRuntime = landmarker.delegate; setRuntime(reportedRuntime); }
           const receivedAt = performance.now();
           timingRef.current = { inferenceMs: detection.inferenceMs, sampleAgeMs: receivedAt - detection.capturedAt, backgroundInference: landmarker.background };
           if (!isFreshHandSample(detection.capturedAt, receivedAt, detection.inferenceMs)) {
@@ -501,7 +497,7 @@ export function useHandTracking({ reflectionActive, reflectionStep, onReflection
         if (document.hidden) { lastFrameAt = performance.now(); return; }
         if (performance.now() - lastFrameAt > 12_000) fail(new Error("VIDEO FRAMES STOPPED"));
       }, 2000);
-      schedule();
+      videoLoopCleanupRef.current = startHandVideoLoop(detect);
     } catch (error) {
       if (!current()) return;
       releaseResources(false);

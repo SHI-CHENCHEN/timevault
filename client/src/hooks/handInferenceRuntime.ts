@@ -74,8 +74,8 @@ async function createBackgroundDetector(model: Uint8Array, wasmPath: string, sig
   } catch (error) { close(); throw error; }
 }
 
-export async function createHandDetector(model: Uint8Array, wasmPath: string, signal: AbortSignal, preparedVision?: HandVisionFileset): Promise<HandDetector> {
-  if (typeof Worker !== "undefined" && typeof OffscreenCanvas !== "undefined" && typeof createImageBitmap === "function") {
+async function openHandDetector(model: Uint8Array, wasmPath: string, signal: AbortSignal, preparedVision?: HandVisionFileset, compatibility = false): Promise<HandDetector> {
+  if (!compatibility && typeof Worker !== "undefined" && typeof OffscreenCanvas !== "undefined" && typeof createImageBitmap === "function") {
     try { return await createBackgroundDetector(model, wasmPath, signal, preparedVision); }
     catch (error) { if (signal.aborted) throw error; }
   }
@@ -88,10 +88,10 @@ export async function createHandDetector(model: Uint8Array, wasmPath: string, si
     baseOptions: { modelAssetBuffer: model, delegate }, runningMode: "VIDEO", numHands: 2,
     minHandDetectionConfidence: 0.5, minHandPresenceConfidence: 0.5, minTrackingConfidence: 0.5,
   });
-  let delegate: "GPU" | "CPU" = "GPU";
+  let delegate: "GPU" | "CPU" = compatibility ? "CPU" : "GPU";
   let detector;
-  try { detector = await create("GPU"); }
-  catch { if (signal.aborted) throw new Error("SESSION_CANCELLED"); delegate = "CPU"; detector = await create("CPU"); }
+  try { detector = await create(delegate); }
+  catch (error) { if (signal.aborted) throw new Error("SESSION_CANCELLED"); if (delegate === "CPU") throw error; delegate = "CPU"; detector = await create("CPU"); }
   if (signal.aborted) { detector.close(); throw new Error("SESSION_CANCELLED"); }
   return {
     delegate, background: false, close: () => detector.close(),
@@ -99,6 +99,33 @@ export async function createHandDetector(model: Uint8Array, wasmPath: string, si
       const startedAt = performance.now();
       const result = detector.detectForVideo(video, capturedAt);
       return { result, capturedAt, inferenceMs: performance.now() - startedAt };
+    },
+  };
+}
+
+/** GPU initialization can succeed while its first video upload fails. Recover
+ * once with direct-video CPU inference, retaining the current camera session
+ * and avoiding the same OffscreenCanvas/ImageBitmap failure in a second worker. */
+export async function createHandDetector(model: Uint8Array, wasmPath: string, signal: AbortSignal, preparedVision?: HandVisionFileset, compatibility = false): Promise<HandDetector> {
+  let backend = await openHandDetector(model, wasmPath, signal, preparedVision, compatibility);
+  let closed = false;
+  let recovered = compatibility;
+  return {
+    get delegate() { return backend.delegate; },
+    get background() { return backend.background; },
+    close() { if (closed) return; closed = true; backend.close(); },
+    async detect(video, capturedAt) {
+      if (closed || signal.aborted) throw new Error("SESSION_CANCELLED");
+      try { return await backend.detect(video, capturedAt); }
+      catch (error) {
+        if (closed || signal.aborted || recovered || /ALREADY IN FLIGHT/.test(String(error))) throw error;
+        recovered = true;
+        backend.close();
+        backend = await openHandDetector(model, wasmPath, signal, preparedVision, true);
+        if (closed || signal.aborted) { backend.close(); throw new Error("SESSION_CANCELLED"); }
+        // Initialization took time; sample the current video, not the old frame.
+        return backend.detect(video, performance.now());
+      }
     },
   };
 }
