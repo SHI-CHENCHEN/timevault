@@ -312,9 +312,9 @@ export class CoverSculpture {
       return;
     }
     const portrait = this.aspect < 1;
-    this.group.scale.setScalar(this.cover ? portrait ? 0.2 : this.aspect < 1.45 ? 0.3 : 0.34 : portrait ? 0.19 : 0.28);
+    this.group.scale.setScalar(this.cover ? portrait ? 0.2 : this.aspect < 1.45 ? 0.335 : 0.4 : portrait ? 0.19 : 0.28);
     this.group.position.set(portrait ? -0.04 : this.aspect < 1.45 ? 0.51 : this.cover ? 0.85 : 0.95,
-      this.cover ? portrait ? -0.12 : 0.08 : portrait ? -0.3 : 0.22, -5);
+      this.cover ? portrait ? -0.12 : 0.14 : portrait ? -0.3 : 0.22, -5);
   }
 
   update(now: number, visible: boolean, minutes: number, pointerX: number, pointerY: number, controls: CoverControlState, cover = true): void {
