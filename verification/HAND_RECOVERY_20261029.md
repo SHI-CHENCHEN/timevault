@@ -4,13 +4,13 @@
 
 The previous build depended exclusively on `requestVideoFrameCallback` whenever a browser exposed that method. A playing 640×480 stream with a stalled callback produced zero inference and then `VIDEO_NOT_READY`. The final build uses a cancellable animation-frame heartbeat plus the existing single-flight, 30 FPS pacer. It prefers the compositor frame counter when `currentTime` is frozen, and keeps duplicate-frame suppression.
 
-The previous detector fell back only during initialization. A worker frame timeout, ImageBitmap/video-upload failure or lost GPU context after initialization instead stopped the camera. The detector now retries once on a direct-video CPU backend, retaining the stream and sampling the current frame after recovery. It does not retry cancellation or concurrent requests. The session's local model/WASM URLs remain alive until stop, so later CPU initialization can use them. Late initialization and repeated cleanup safely close resources.
+The previous detector fell back only during initialization. A worker frame timeout, ImageBitmap/video-upload failure or lost GPU context after initialization instead stopped the camera. Bitmap creation itself also had no timeout. The detector now bounds bitmap capture and retries once on a direct-video CPU backend, retaining the stream and sampling the current frame after recovery. It does not retry cancellation or concurrent requests. The session's local model/WASM URLs remain alive until stop, so later CPU initialization can use them. Late bitmaps, late initialization and repeated cleanup safely release resources.
 
 An explicit **COMPATIBILITY MODE** button also lets a visitor choose direct-video CPU inference when a GPU runtime starts but does not recognise a visible hand. This restarts local tracking with the existing camera permission. Manual chapters remain available.
 
 ## Validation
 
-- 108 tests in 18 files pass. Regression cases cover absent video callbacks, a frozen video clock, worker failure/timeout, CPU recovery, cancellation, resources arriving after stop and idempotent disposal.
+- 109 tests in 18 files pass. Regression cases cover absent video callbacks, a frozen video clock, worker failure/timeout, a browser that never resolves bitmap capture, CPU recovery, cancellation, resources arriving after stop and idempotent disposal.
 - Client/shared/server TypeScript checks and ordinary client/server, standalone and GitHub Pages builds pass.
 - The actual production app was tested with its real MediaPipe model and a generated canvas MediaStream using Google's public `pointing_up.jpg` and `right_hands.jpg` fixtures. No fake landmarks or simulator results supplied the recognition checks.
 - In the old build, a deliberately stalled video callback stopped inference. With the fix, the same stalled-callback scenario detects a hand. A deliberately injected GPU frame failure then recovers to CPU and reports HAND MIRROR ACTIVE at approximately 10–19 FPS during the recovery checks (performance varies by viewport and host load).

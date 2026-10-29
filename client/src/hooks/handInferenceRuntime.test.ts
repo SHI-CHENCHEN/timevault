@@ -34,8 +34,8 @@ describe("background detector lifecycle", () => {
     const detector = await createHandDetector(new Uint8Array([1, 2]), "/timevault/mediapipe", new AbortController().signal);
     expect(detector.background).toBe(true);
     const detection = detector.detect({} as HTMLVideoElement, 1234);
-    await Promise.resolve(); await Promise.resolve();
     const worker = TestWorker.instances[0];
+    await vi.waitFor(() => expect(worker.messages.at(-1)?.type).toBe("detect"));
     expect(worker.messages.at(-1)).toMatchObject({ type: "detect", capturedAt: 1234 });
     const result = { landmarks: [], handedness: [[{ categoryName: "Left", score: 0.9, index: 0, displayName: "Left" }]], handednesses: [], worldLandmarks: [] };
     worker.respond({ type: "result", result, capturedAt: 1234, inferenceMs: 12 });
@@ -113,7 +113,7 @@ describe("background detector lifecycle", () => {
     const detector = await createHandDetector(new Uint8Array([1]), "/mediapipe", new AbortController().signal, vision);
     const video = {} as HTMLVideoElement;
     const detection = detector.detect(video, -100);
-    await Promise.resolve(); await Promise.resolve();
+    await vi.waitFor(() => expect(TestWorker.instances[0].messages.at(-1)?.type).toBe("detect"));
     TestWorker.instances[0].respond({ type: "error", message: "WebGL context lost" });
     const result = await detection;
     expect(result.capturedAt).toBeGreaterThanOrEqual(0);
@@ -135,7 +135,7 @@ describe("background detector lifecycle", () => {
     const detector = await createHandDetector(new Uint8Array([1]), "/mediapipe", abort.signal);
     const detection = detector.detect({} as HTMLVideoElement, 10);
     const rejection = expect(detection).rejects.toThrow("SESSION_CANCELLED");
-    await Promise.resolve(); await Promise.resolve();
+    await vi.waitFor(() => expect(TestWorker.instances[0].messages.at(-1)?.type).toBe("detect"));
     abort.abort(); await rejection;
     expect(HandLandmarker.createFromOptions).not.toHaveBeenCalled();
     detector.close();
@@ -147,7 +147,7 @@ describe("background detector lifecycle", () => {
     const detector = await createHandDetector(new Uint8Array([1]), "/mediapipe", new AbortController().signal);
     const detection = detector.detect({} as HTMLVideoElement, 10);
     const rejection = expect(detection).rejects.toThrow("SESSION_CANCELLED");
-    await Promise.resolve(); await Promise.resolve();
+    await vi.waitFor(() => expect(TestWorker.instances[0].messages.at(-1)?.type).toBe("detect"));
     TestWorker.instances[0].respond({ type: "error", message: "WebGL context lost" });
     await vi.waitFor(() => expect(ready).toBeTypeOf("function"));
     detector.close(); ready(fallback as unknown as HandLandmarker); await rejection;
@@ -162,5 +162,22 @@ describe("background detector lifecycle", () => {
     expect(HandLandmarker.createFromOptions).toHaveBeenCalledOnce();
     detector.close(); detector.close();
     expect(fallback.close).toHaveBeenCalledOnce();
+  });
+
+  it("recovers even when the browser never resolves video bitmap capture, and releases late bitmaps", async () => {
+    vi.useFakeTimers();
+    const captures: Array<(bitmap: ImageBitmap) => void> = [];
+    vi.stubGlobal("createImageBitmap", () => new Promise<ImageBitmap>(resolve => captures.push(resolve)));
+    const detector = await createHandDetector(new Uint8Array([1]), "/mediapipe", new AbortController().signal);
+    const detection = detector.detect({} as HTMLVideoElement, 10);
+    await vi.advanceTimersByTimeAsync(4000);
+    expect(await detection).toMatchObject({ result: { landmarks: [] } });
+    expect(detector.delegate).toBe("CPU");
+    expect(captures).toHaveLength(2);
+    const bitmaps = captures.map(() => ({ close: vi.fn() }));
+    captures.forEach((resolve, i) => resolve(bitmaps[i] as unknown as ImageBitmap));
+    await Promise.resolve();
+    bitmaps.forEach(bitmap => expect(bitmap.close).toHaveBeenCalledOnce());
+    detector.close();
   });
 });
