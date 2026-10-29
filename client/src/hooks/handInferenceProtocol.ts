@@ -2,7 +2,7 @@ import type { HandLandmarkerResult } from "@mediapipe/tasks-vision";
 import type { HandVisionFileset } from "./handAssetLoader";
 
 export type HandWorkerRequest =
-  | { type: "init"; wasmPath: string; model: Uint8Array; vision?: HandVisionFileset }
+  | { type: "init"; wasmPath: string; model: Uint8Array; vision?: HandVisionFileset; delegate?: "GPU" | "CPU" }
   | { type: "detect"; bitmap: ImageBitmap; capturedAt: number }
   | { type: "dispose" };
 

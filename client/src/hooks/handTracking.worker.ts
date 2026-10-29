@@ -10,14 +10,14 @@ self.onmessage = async (event: MessageEvent<HandWorkerRequest>) => {
     if (message.type === "init") {
       const vision = message.vision ?? await FilesetResolver.forVisionTasks(message.wasmPath);
       const create = (delegate: "GPU" | "CPU") => HandLandmarker.createFromOptions(vision, {
-        canvas: new OffscreenCanvas(640, 480),
+        canvas: new OffscreenCanvas(320, 240),
         baseOptions: { modelAssetBuffer: message.model, delegate },
         runningMode: "VIDEO", numHands: 2,
         minHandDetectionConfidence: 0.5, minHandPresenceConfidence: 0.5, minTrackingConfidence: 0.5,
       });
-      let delegate: "GPU" | "CPU" = "GPU";
-      try { detector = await create("GPU"); }
-      catch { delegate = "CPU"; detector = await create("CPU"); }
+      let delegate: "GPU" | "CPU" = message.delegate ?? "GPU";
+      try { detector = await create(delegate); }
+      catch (error) { if (delegate === "CPU") throw error; delegate = "CPU"; detector = await create("CPU"); }
       reply({ type: "ready", delegate });
     } else if (message.type === "detect") {
       try {

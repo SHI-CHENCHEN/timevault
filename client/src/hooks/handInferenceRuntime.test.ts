@@ -17,7 +17,7 @@ class TestWorker {
   constructor() { TestWorker.instances.push(this); }
   postMessage(message: HandWorkerRequest) {
     this.messages.push(message);
-    if (message.type === "init" && TestWorker.autoReady) queueMicrotask(() => this.respond({ type: "ready", delegate: "GPU" }));
+    if (message.type === "init" && TestWorker.autoReady) queueMicrotask(() => this.respond({ type: "ready", delegate: message.delegate ?? "GPU" }));
   }
   respond(response: HandWorkerResponse) { this.onmessage?.({ data: response } as MessageEvent<HandWorkerResponse>); }
 }
@@ -28,7 +28,7 @@ describe("background detector lifecycle", () => {
     vi.stubGlobal("Worker", TestWorker); vi.stubGlobal("OffscreenCanvas", class {});
     vi.stubGlobal("createImageBitmap", vi.fn(async () => ({ close: vi.fn() })));
   });
-  afterEach(() => { vi.unstubAllGlobals(); vi.clearAllMocks(); vi.useRealTimers(); });
+  afterEach(() => { vi.unstubAllGlobals(); vi.clearAllMocks(); vi.restoreAllMocks(); vi.useRealTimers(); });
 
   it("transfers raw frames and uses the capture timestamp without changing handedness", async () => {
     const detector = await createHandDetector(new Uint8Array([1, 2]), "/timevault/mediapipe", new AbortController().signal);
@@ -37,6 +37,7 @@ describe("background detector lifecycle", () => {
     const worker = TestWorker.instances[0];
     await vi.waitFor(() => expect(worker.messages.at(-1)?.type).toBe("detect"));
     expect(worker.messages.at(-1)).toMatchObject({ type: "detect", capturedAt: 1234 });
+    expect(createImageBitmap).toHaveBeenCalledWith({}, expect.objectContaining({ resizeWidth: 320, resizeHeight: 240 }));
     const result = { landmarks: [], handedness: [[{ categoryName: "Left", score: 0.9, index: 0, displayName: "Left" }]], handednesses: [], worldLandmarks: [] };
     worker.respond({ type: "result", result, capturedAt: 1234, inferenceMs: 12 });
     expect(await detection).toMatchObject({ result, capturedAt: 1234, inferenceMs: 12 });
@@ -178,6 +179,32 @@ describe("background detector lifecycle", () => {
     captures.forEach((resolve, i) => resolve(bitmaps[i] as unknown as ImageBitmap));
     await Promise.resolve();
     bitmaps.forEach(bitmap => expect(bitmap.close).toHaveBeenCalledOnce());
+    detector.close();
+  });
+
+  it("moves sustained slow GPU inference to a CPU worker without blocking the animation thread", async () => {
+    let clock = 0;
+    vi.spyOn(performance, "now").mockImplementation(() => clock);
+    const detector = await createHandDetector(new Uint8Array([1]), "/mediapipe", new AbortController().signal);
+    const gpu = TestWorker.instances[0];
+    const result = { landmarks: [], handedness: [], handednesses: [], worldLandmarks: [] };
+    for (let i = 0; i < 6; i++) {
+      const sampleAt = clock;
+      const pending = detector.detect({} as HTMLVideoElement, sampleAt);
+      await vi.waitFor(() => expect(gpu.messages.filter(m => m.type === "detect")).toHaveLength(i + 1));
+      clock += 120;
+      gpu.respond({ type: "result", result, capturedAt: sampleAt, inferenceMs: 110 });
+      if (i < 5) { await pending; continue; }
+      await vi.waitFor(() => expect(TestWorker.instances[1]?.messages.at(-1)?.type).toBe("detect"));
+      const cpu = TestWorker.instances[1];
+      expect(cpu.messages[0]).toMatchObject({ type: "init", delegate: "CPU" });
+      cpu.respond({ type: "result", result, capturedAt: clock, inferenceMs: 30 });
+      await pending;
+    }
+    expect(detector.delegate).toBe("CPU");
+    expect(detector.background).toBe(true);
+    expect(gpu.terminate).toHaveBeenCalledOnce();
+    expect(HandLandmarker.createFromOptions).not.toHaveBeenCalled();
     detector.close();
   });
 });

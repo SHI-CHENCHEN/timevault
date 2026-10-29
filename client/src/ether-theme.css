@@ -1,0 +1,125 @@
+/* TIMEVAULT / nocturnal violet glass. A static backdrop and quiet silver type.
+   Layout, account flow, gesture roles and particle forms retain their contracts. */
+:root { --void: #09091f; --surface: #17122d; --surface-strong: #292044; --line: #776395; --violet: #b9a5ed; --blue: #a0b6db; }
+.app {
+  --theme-ink: #ede8f8;
+  --theme-soft: #c4bbd9;
+  --theme-muted: #aa9bc2;
+  --theme-line: #6b578b;
+  --theme-accent: #bda3ed;
+  --theme-panel: #211934;
+  --theme-button: #655084;
+  background: #0b0a20;
+}
+.app.app--intro, .app.app--idle.app--entered,
+.app:is(.app--mode_selection, .app--time_selection, .app--confirmation,
+  .app--transaction_processing, .app--transaction_complete, .app--buyback_complete, .app--history) {
+  background: radial-gradient(ellipse at 66% 48%, #36234c80, transparent 66%), #0b0a20;
+}
+.app .environment-art {
+  display: block;
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  pointer-events: none;
+  background-image: linear-gradient(90deg, #0b092132, #0b09210a 58%, #0b092124), url("/images/time-ether-v2.jpg");
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  opacity: 0.7;
+  mix-blend-mode: normal;
+  transform: none;
+  filter: none;
+  animation: none;
+  transition: none;
+  will-change: auto;
+}
+.app.app--entered .environment-art {
+  display: block;
+  filter: none;
+  transform: none;
+  animation: none;
+  transition: none;
+  will-change: auto;
+}
+.app.app--intro .environment-art { opacity: 0.88; }
+.app--intro .digital-orbit-layer { filter: none; }
+.app.app--intro:has(.intro-enter:hover) .environment-art { transform: none; filter: none; }
+.app:not(.app--reflection)::before { opacity: 0.09; }
+.app::after { border-color: #b5a1d726; box-shadow: inset 0 0 120px #06071955; }
+.intro-sequence::before {
+  background: linear-gradient(90deg, #0b092177, transparent 55%), linear-gradient(0deg, #0b092199, transparent 18%, transparent 88%, #0b092133);
+  mix-blend-mode: normal;
+}
+.intro-sequence::after { background: none; }
+.app .intro-wordmark span b {
+  background-image: linear-gradient(114deg, #b0a0cf 0%, #ede7fa 28%, #b19bd3 54%, #d3c6eb 76%, #a894ca 100%);
+}
+.app .intro-wordmark span b::after {
+  background-image: radial-gradient(ellipse 0.38em 0.9em at var(--title-light-x) 50%, #fff5ff, #d4bdff 36%, transparent 76%);
+}
+.app .intro-wordmark[data-illuminated] span b::after {
+  background-image: linear-gradient(112deg, transparent 43%, #b6a1df 48%, #fff4ff 50%, #cbb9e9 52%, transparent 57%);
+}
+.app .intro-concept-line, .app .intro-link-status, .app .intro-subtitle,
+.app .intro-editorial, .app .intro-accumulation, .app .intro-reserve span,
+.app .intro-object-hint, .app .intro-object-hint small, .app .intro-weave-caption,
+.app .intro-weave-caption p, .app .intro-composition-mark, .app .intro-composition-mark p { color: #c8bedc; }
+.app .intro-reserve strong, .app .intro-accumulation b,
+.app .intro-composition-mark strong { color: #e6dff1; }
+.intro-reserve, .intro-composition-mark { border-left-color: #ad91c866; }
+.intro-reserve::after, .intro-subtitle::before { background: #bda3d577; }
+.app .intro-enter {
+  background: linear-gradient(118deg, #71548f, #46345f);
+  border-color: #b9a3cf99;
+  box-shadow: inset 0 1px 0 #ebdff333, 0 10px 40px #07051c55;
+}
+.app .intro-enter i { color: #e2df9e; border-color: #ddd79966; background: #dcd78909; }
+.app .intro-enter:hover { background: linear-gradient(118deg, #8765a6, #624576); border-color: #d0b7e4; box-shadow: 0 0 28px #9b78bc22; }
+.app .intro-actions button { color: #e2d8ef; background: #17112555; border-left-color: #b59ad755; }
+.app .intro-actions button small { color: #d1ce91; }
+.app .intro-actions button:is(:hover, :focus-visible) { color: #f2e8fa; background: #77538f33; border-left-color: #dddaa0; }
+.app--intro .intro-link-status .status-dot { background: #ddd997; box-shadow: 0 0 9px #ddd99722; }
+.app--intro .intro-vessel-tools button { background: #20162fdf; color: #dfd0ef; border-color: #a48abf; box-shadow: none; }
+.app--intro .intro-vessel-tools button:is(:hover, [aria-pressed="true"]) { background: #503568; color: #f2e5ff; border-color: #d6bddf; }
+.app .button--primary, .app .peripheral-actions .button--primary { background: var(--theme-button); border-color: #b6a1cd; }
+.app .button--primary:hover, .app .peripheral-actions .button--primary:hover { background: #84649f; border-color: #cdb4e5; }
+
+/* The same material recedes and changes framing through the existing journey. */
+.app.app--idle.app--entered .environment-art { opacity: 0.72; background-position: 40% center; }
+.app--idle.app--entered .idle-actions > button:first-child { background: #593d79; border-color: #b799d2; }
+.app--idle.app--entered .idle-actions > button { background-color: #1b142bdd; }
+.app.app--mode_selection .environment-art { opacity: 0.65; background-position: left center; }
+.app.app--time_selection .environment-art { opacity: 0.66; background-position: 20% center; }
+.app.app--confirmation .environment-art { opacity: 0.57; background-position: right center; }
+.app:is(.app--transaction_processing, .app--transaction_complete, .app--buyback_complete) .environment-art { opacity: 0.58; background-position: right bottom; }
+.app.app--history .environment-art { opacity: 0.68; background-position: left bottom; }
+.app--history .archive-memory { background: radial-gradient(ellipse, #160f2e99, transparent 72%); }
+.app--history .archive-record.is-active { background: linear-gradient(90deg, #9b78c036, #46305e14); }
+.app.app--buy { --theme-accent: #b5c2e7; --theme-button: #4e5684; background: #0b0e27; }
+.app.app--buy .environment-art { opacity: 0.61; background-position: right center; }
+
+/* Quiet peripheral light keeps all three hand fields readable. No animated backdrop. */
+.app.app--reflection, .app.app--reflection.app--hand-mirror { background: #0b091e; --theme-accent: #c2a6e8; }
+.app.app--reflection .environment-art {
+  opacity: 0.43;
+  background-image: radial-gradient(ellipse at 55% 48%, #0b091e99, #0b091e11 75%), url("/images/time-ether-v2.jpg");
+}
+.app.app--reflection:has(.reflection-steps button:nth-child(2).is-active) .environment-art { background-position: right center; }
+.app.app--reflection:has(.reflection-steps button:nth-child(3).is-active) .environment-art { background-position: left bottom; }
+.app.app--reflection.app--hand-mirror .environment-art { opacity: 0.3; }
+.app--reflection .hand-mirror-panel { background: linear-gradient(115deg, #1d142fe8, #100c23d9); border-color: #b596d35c; }
+.app--reflection .reflection-steps button:is(:hover, .is-active) { background: #503169ba; color: #f1e5ff; }
+.app--reflection .hand-mirror-panel > .button { background: #654783; border-color: #b9a0d2; }
+.app--reflection .reflection-mirror__center { background: #120c25d9; }
+@media (min-width: 821px) {
+  .app .intro-wordmark { font-size: clamp(96px, 8.6vw, 185px); width: 39%; }
+  .intro-sculpture-control { left: 48%; top: 8%; width: 44%; height: 75%; }
+  .intro-object-hint { left: 68.5%; bottom: 11%; gap: 7px; }
+  .intro-weave-caption { left: 71%; }
+}
+@media (max-width: 820px) {
+  .app .environment-art { background-position: 60% center; }
+  .app.app--intro .environment-art { opacity: 0.78; }
+  .intro-sequence::before { background: linear-gradient(180deg, #0b092166, #0b092133 35%, transparent 58%, #0b092199); }
+}

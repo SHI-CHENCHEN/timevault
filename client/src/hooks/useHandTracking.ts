@@ -246,7 +246,7 @@ export function useHandTracking({ reflectionActive, reflectionStep, onReflection
       const velocityX = simulatorActive ? simulatorRef.current[`${side}VelocityX`] : acquired ? 0 : clamp((hand.metrics.palmX - previous.x) / elapsed);
       const velocityY = simulatorActive ? simulatorRef.current[`${side}VelocityY`] : acquired ? 0 : clamp((hand.metrics.palmY - previous.y) / elapsed);
       const palmTau = palmSmoothingMs(Math.hypot(hand.metrics.palmX - previous.x, hand.metrics.palmY - previous.y));
-      const follow = (from: number, to: number, tau = 40) => acquired ? to : smoothHandValue(from, to, elapsedMs, tau);
+      const follow = (from: number, to: number, tau = 28) => acquired ? to : smoothHandValue(from, to, elapsedMs, tau);
       previousHandsRef.current[side] = { x: hand.metrics.palmX, y: hand.metrics.palmY, at: now };
       if (side === "left") {
         Object.assign(visual, {

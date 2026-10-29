@@ -147,7 +147,7 @@ export class GestureParticleField {
 
     const delta = Math.min(0.25, Math.max(0.001, deltaMs / 1000));
     const frameScale = delta * 60;
-    const follow = 1 - Math.exp(-9 * delta);
+    const follow = 1 - Math.exp(-22 * delta);
     const { coreWeight, disperseWeight, rightPullStrength, filamentActive } = handFieldPolicy(hand);
     const bothHands = hand.leftDetected && hand.rightDetected;
     const handSpan = bothHands ? Math.hypot(hand.rightPalmX - hand.leftPalmX, hand.rightPalmY - hand.leftPalmY) : 0;

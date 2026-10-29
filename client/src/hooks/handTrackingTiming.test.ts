@@ -42,6 +42,14 @@ describe("fresh-frame hand scheduling", () => {
     expect(isFreshHandSample(100, 750, 20)).toBe(false);
     expect(isFreshHandSample(100, 1500, 1400)).toBe(false);
   });
+
+  it("yields one display frame between compatible CPU detections without the previous 50 percent extra delay", () => {
+    const pacer = new HandFramePacer();
+    expect(pacer.begin(0, 0)).toBe(true); pacer.complete(100, false);
+    expect(pacer.begin(100, 0.1)).toBe(true); pacer.complete(100, false);
+    expect(pacer.begin(213, 0.213)).toBe(false);
+    expect(pacer.begin(216, 0.216)).toBe(true);
+  });
 });
 
 describe("time-based hand response", () => {

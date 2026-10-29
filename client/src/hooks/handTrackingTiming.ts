@@ -20,7 +20,7 @@ export class HandFramePacer {
   complete(inferenceMs: number, background: boolean): void {
     this.busy = false;
     // The compatibility path yields time back to rendering on slower devices.
-    this.interval = background ? HAND_SAMPLE_INTERVAL_MS : Math.max(HAND_SAMPLE_INTERVAL_MS, Math.min(160, inferenceMs * 1.5));
+    this.interval = background ? HAND_SAMPLE_INTERVAL_MS : Math.max(HAND_SAMPLE_INTERVAL_MS, Math.min(160, inferenceMs + 16));
   }
 }
 
@@ -34,7 +34,7 @@ export function smoothHandValue(current: number, target: number, elapsedMs: numb
 
 export function palmSmoothingMs(distance: number): number {
   // Suppress small stationary jitter, but stop dragging behind a deliberate move.
-  return 50 - Math.min(1, distance / 0.045) * 28;
+  return 34 - Math.min(1, distance / 0.045) * 20;
 }
 
 export function isFreshHandSample(capturedAt: number, now: number, inferenceMs = 0): boolean {

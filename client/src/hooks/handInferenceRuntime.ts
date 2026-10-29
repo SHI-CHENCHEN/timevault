@@ -18,7 +18,7 @@ export interface HandDetector {
 
 type Pending = { resolve: (response: HandWorkerResponse) => void; reject: (error: Error) => void; timer: ReturnType<typeof setTimeout> };
 
-async function createBackgroundDetector(model: Uint8Array, wasmPath: string, signal: AbortSignal, vision?: HandVisionFileset): Promise<HandDetector> {
+async function createBackgroundDetector(model: Uint8Array, wasmPath: string, signal: AbortSignal, vision?: HandVisionFileset, delegate: "GPU" | "CPU" = "GPU"): Promise<HandDetector> {
   // A classic, bundled worker also supports MediaPipe's importScripts WASM loader.
   const worker = new Worker(new URL("./handTracking.worker.ts", import.meta.url));
   let pending: Pending | null = null;
@@ -54,13 +54,13 @@ async function createBackgroundDetector(model: Uint8Array, wasmPath: string, sig
   };
   try {
     const copy = new Uint8Array(model);
-    const ready = await request({ type: "init", wasmPath, model: copy, vision }, [copy.buffer], 25_000);
+    const ready = await request({ type: "init", wasmPath, model: copy, vision, delegate }, [copy.buffer], 25_000);
     if (ready.type !== "ready") throw new Error("HAND WORKER INITIALIZATION FAILED");
     return {
       delegate: ready.delegate, background: true, close,
       detect: async (video, capturedAt) => {
         const width = video.videoWidth || 640, height = video.videoHeight || 480;
-        const scale = Math.min(1, 480 / Math.max(width, height));
+        const scale = Math.min(1, 320 / Math.max(width, height));
         const capture = (promise: Promise<ImageBitmap>) => acquireSessionResource(promise, 2000, "HAND FRAME CAPTURE TIMED OUT", () => !closed && !signal.aborted, bitmap => bitmap.close());
         let bitmap: ImageBitmap;
         try { bitmap = await capture(createImageBitmap(video, { resizeWidth: Math.round(width * scale), resizeHeight: Math.round(height * scale), resizeQuality: "low" })); }
@@ -112,13 +112,31 @@ export async function createHandDetector(model: Uint8Array, wasmPath: string, si
   let backend = await openHandDetector(model, wasmPath, signal, preparedVision, compatibility);
   let closed = false;
   let recovered = compatibility;
+  let slowGpuFrames = 0;
+  let cpuWorkerTried = false;
   return {
     get delegate() { return backend.delegate; },
     get background() { return backend.background; },
     close() { if (closed) return; closed = true; backend.close(); },
     async detect(video, capturedAt) {
       if (closed || signal.aborted) throw new Error("SESSION_CANCELLED");
-      try { return await backend.detect(video, capturedAt); }
+      try {
+        const startedAt = performance.now();
+        const detection = await backend.detect(video, capturedAt);
+        // A GPU may initialize correctly yet be slower than WASM while sharing
+        // graphics time with the particle field. Switch only on sustained cost.
+        if (!closed && !signal.aborted && !cpuWorkerTried && backend.background && backend.delegate === "GPU") {
+          slowGpuFrames = performance.now() - startedAt > 100 ? slowGpuFrames + 1 : 0;
+          if (slowGpuFrames >= 6) {
+            cpuWorkerTried = true;
+            backend.close();
+            backend = await createBackgroundDetector(model, wasmPath, signal, preparedVision, "CPU");
+            if (closed || signal.aborted) { backend.close(); throw new Error("SESSION_CANCELLED"); }
+            return await backend.detect(video, performance.now());
+          }
+        }
+        return detection;
+      }
       catch (error) {
         if (closed || signal.aborted || recovered || /ALREADY IN FLIGHT/.test(String(error))) throw error;
         recovered = true;

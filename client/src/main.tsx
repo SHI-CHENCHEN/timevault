@@ -9,6 +9,7 @@ import "./exhibition-v4-receipt.css";
 import "./exhibition-v4-outcome.css";
 import "./exhibition-v4-blue.css";
 import "./chromatic-theme.css";
+import "./ether-theme.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
