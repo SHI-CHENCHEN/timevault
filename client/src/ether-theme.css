@@ -98,6 +98,73 @@
 .app--history .archive-record.is-active { background: linear-gradient(90deg, #9b78c036, #46305e14); }
 .app.app--buy { --theme-accent: #b5c2e7; --theme-button: #4e5684; background: #0b0e27; }
 .app.app--buy .environment-art { opacity: 0.61; background-position: right center; }
+.app.app--buy:where(.app--mode_selection, .app--time_selection, .app--confirmation, .app--transaction_processing, .app--buyback_countdown, .app--buyback_complete) {
+  --theme-ink: #e5f4ff;
+  --theme-soft: #b9d5eb;
+  --theme-muted: #91b4d1;
+  --theme-line: #507b9a;
+  --theme-accent: #a9dcf4;
+  --theme-panel: #152c45;
+  --theme-button: #416f90;
+  background: radial-gradient(ellipse at 62% 44%, #244c6e88, transparent 67%), #091627;
+}
+.app.app--buy:where(.app--mode_selection, .app--time_selection, .app--confirmation, .app--transaction_processing, .app--buyback_countdown, .app--buyback_complete) .environment-art {
+  opacity: 0.78;
+  background-position: right center;
+  background-image:
+    radial-gradient(ellipse at 87% 20%, #e7dfa521, transparent 28%),
+    linear-gradient(115deg, #0a183638, transparent 63%, #071a302b),
+    linear-gradient(125deg, #7195d0, #4397b6 64%, #7295c5),
+    url("/images/time-ether-v2.jpg");
+  background-blend-mode: normal, normal, color, normal;
+}
+.app:is(.app--time_selection, .app--confirmation, .app--transaction_processing, .app--transaction_complete):not(.app--buy) {
+  --theme-accent: #c6a5ee;
+  --theme-button: #78549b;
+  --theme-line: #87679f;
+}
+.app:is(.app--time_selection, .app--confirmation, .app--transaction_processing, .app--transaction_complete):not(.app--buy) .environment-art {
+  background-image:
+    radial-gradient(ellipse at 88% 19%, #e5d78b22, transparent 27%),
+    linear-gradient(100deg, #160e282b, transparent 68%),
+    linear-gradient(125deg, #4b3e95, #874ca2 64%, #514a92),
+    url("/images/time-ether-v2.jpg");
+  background-blend-mode: normal, normal, color, normal;
+}
+.app.app--intro .environment-art {
+  background-image:
+    radial-gradient(ellipse at 83% 18%, #e7db8d1a, transparent 24%),
+    linear-gradient(90deg, #0b092132, #0b09210a 58%, #0b092124),
+    linear-gradient(120deg, #3863a0, #694994 62%, #81719a),
+    url("/images/time-ether-v2.jpg");
+  background-blend-mode: normal, normal, color, normal;
+}
+.app.app--buy:where(.app--time_selection, .app--confirmation, .app--transaction_processing, .app--buyback_countdown, .app--buyback_complete) :is(.button--primary, .peripheral-actions .button--primary) { border-color: #91c5df; }
+.app.app--buy:where(.app--time_selection, .app--confirmation, .app--transaction_processing, .app--buyback_countdown, .app--buyback_complete) :is(.button--primary, .peripheral-actions .button--primary):hover { background: #568ba9; border-color: #c6e8f3; }
+.app.app--buy .time-option.is-selected { background: linear-gradient(180deg, #76b9da33, #244f7322); border-color: #9dd5ee; }
+.app.app--buy .fragment-clock circle { stroke: #5e91ae; }
+.app.app--buy .fragment-clock line { stroke: #719eb9; }
+.app.app--buy .fragment-clock line.is-filled { stroke: #c0eaff; }
+.app.app--buy .fragment-clock__center b { color: #def4ff; }
+.app:is(.app--time_selection, .app--confirmation) .state-caption i,
+.app .receipt-reference { color: #dcd89b; }
+.app.app--buy .selector-step { color: #e3dca5; }
+
+/* Clear, pointer-driven silver light; a longer click pass also works by keyboard. */
+.app .intro-wordmark span b {
+  background-size: 190% 100%;
+  background-position: var(--title-light-x) 50%;
+  transition: background-position 160ms ease, filter 180ms ease;
+}
+.app .intro-wordmark span b::after {
+  background-image: radial-gradient(ellipse 0.75em 1.2em at var(--title-light-x) 50%, #fff9ff, #c5ddff 32%, #b39ceba6 56%, transparent 82%);
+}
+.app .intro-wordmark:is(:hover, :focus-visible) span b { filter: drop-shadow(0 0 12px #c6c0ff55); }
+.app .intro-wordmark:is(:hover, :focus-visible) span b::after { opacity: 0.95; }
+.app .intro-wordmark[data-illuminated] span b::after { animation-duration: 1400ms; }
+@media (prefers-reduced-motion: reduce) {
+  .app .intro-wordmark span b { transition: none; }
+}
 
 /* Quiet peripheral light keeps all three hand fields readable. No animated backdrop. */
 .app.app--reflection, .app.app--reflection.app--hand-mirror { background: #0b091e; --theme-accent: #c2a6e8; }

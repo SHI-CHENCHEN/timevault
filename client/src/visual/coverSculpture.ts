@@ -16,7 +16,7 @@ export class CoverSculpture {
   private readonly grainTexture: THREE.CanvasTexture;
   private readonly reducedMotion: boolean;
   private readonly chronometer = new THREE.Group();
-  private readonly clockHands: THREE.Line[] = [];
+  private readonly clockHands: THREE.Mesh[] = [];
   private readonly ventMeshes: THREE.InstancedMesh[] = [];
   private readonly timezoneOffset = new Date().getTimezoneOffset();
   private aspect = 1;
@@ -178,7 +178,7 @@ export class CoverSculpture {
       add(new THREE.SphereGeometry(0.018, 12, 8), this.lightMaterial, x, -0.32, 0.315, controller);
     }
 
-    const calibrationMaterial = new THREE.LineBasicMaterial({ color: 0x6f659e, transparent: true, opacity: 0.38 });
+    const calibrationMaterial = new THREE.LineBasicMaterial({ color: 0xb8bbdf, transparent: true, opacity: 0.68 });
     this.materials.push(calibrationMaterial);
     const calibrationPositions: number[] = [];
     for (let index = 0; index < 60; index += 1) {
@@ -196,12 +196,15 @@ export class CoverSculpture {
       arcPoints.push(new THREE.Vector3(Math.cos(angle) * 2.82 + 0.1, Math.sin(angle) * 2.82, -1.5));
     }
     this.chronometer.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(arcPoints), calibrationMaterial));
-    for (const [length, opacity] of [[1.32, 0.58], [2.1, 0.52], [2.6, 0.78]]) {
-      const material = new THREE.LineBasicMaterial({ color: 0x7760a5, transparent: true, opacity });
+    for (const [length, width, color] of [[1.32, 0.022, 0xd4c7f0], [2.1, 0.015, 0xb9d7ee], [2.6, 0.007, 0xe4df94]]) {
+      const material = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.86, side: THREE.DoubleSide });
       this.materials.push(material);
-      const hand = new THREE.Line(new THREE.BufferGeometry().setFromPoints([
-        new THREE.Vector3(0, 0.26, 0), new THREE.Vector3(0, length, 0),
-      ]), material);
+      // Tapered faces stay readable where WebGL ignores native line width.
+      const silhouette = new THREE.Shape();
+      silhouette.moveTo(-width, -0.22); silhouette.lineTo(-width, length * 0.76);
+      silhouette.lineTo(0, length); silhouette.lineTo(width, length * 0.76);
+      silhouette.lineTo(width, -0.22); silhouette.closePath();
+      const hand = new THREE.Mesh(new THREE.ShapeGeometry(silhouette), material);
       const spindle = new THREE.Group();
       spindle.position.set(0.1, 0, -1.38);
       spindle.add(hand); this.clockHands.push(hand); this.chronometer.add(spindle);

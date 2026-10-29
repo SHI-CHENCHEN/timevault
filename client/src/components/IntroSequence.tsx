@@ -71,8 +71,8 @@ export function IntroSequence({
     const x = Math.max(0, Math.min(1, (event.clientX - bounds.left) / Math.max(1, bounds.width)));
     const y = Math.max(0, Math.min(1, (event.clientY - bounds.top) / Math.max(1, bounds.height)));
     title.style.setProperty("--title-light-x", `${x * 100}%`);
-    title.style.setProperty("--title-shift-x", `${(x - 0.5) * 12}px`);
-    title.style.setProperty("--title-shift-y", `${(y - 0.5) * 8}px`);
+    title.style.setProperty("--title-shift-x", `${(x - 0.5) * 16}px`);
+    title.style.setProperty("--title-shift-y", `${(y - 0.5) * 10}px`);
   };
   const resetWordmark = () => {
     const title = wordmarkRef.current;
@@ -85,11 +85,14 @@ export function IntroSequence({
     const title = wordmarkRef.current;
     if (!title) return;
     if (wordmarkTimer.current) clearTimeout(wordmarkTimer.current);
+    // Restart the light pass even when clicked again before the previous pass ends.
+    delete title.dataset.illuminated;
+    void title.offsetWidth;
     title.dataset.illuminated = "true";
     wordmarkTimer.current = setTimeout(() => {
       delete title.dataset.illuminated;
       wordmarkTimer.current = null;
-    }, 900);
+    }, 1400);
   };
 
   return (
