@@ -291,7 +291,7 @@ export class CoverSculpture {
   }
 
   measureReserveStage(): void {
-    const stage = document.querySelector(".app--entered .idle-vessel-stage");
+    const stage = document.querySelector(this.cover ? ".intro-sculpture-control" : ".app--entered .idle-vessel-stage");
     if (stage !== this.observedStage) {
       this.stageObserver.disconnect();
       this.observedStage = stage;
@@ -300,15 +300,16 @@ export class CoverSculpture {
     if (!stage) { this.stageBounds = null; return; }
     const rect = stage.getBoundingClientRect();
     this.stageBounds = { x: rect.x, y: rect.y, width: rect.width, height: rect.height };
-    if (!this.cover) this.placeVessel();
+    this.placeVessel();
   }
 
   private placeVessel(): void {
-    if (!this.cover && this.stageBounds) {
+    if (this.stageBounds) {
       const { x, y, width, height } = this.stageBounds;
       const planeHeight = 10 * Math.tan(THREE.MathUtils.degToRad(16));
       const unitsPerPixel = planeHeight / this.viewHeight;
-      const scale = Math.max(0, Math.min((width - 48) / 3.7, (height - 48) / 4.8)) * unitsPerPixel;
+      const padding = this.cover ? 24 : 48;
+      const scale = Math.max(0, Math.min((width - padding) / 3.7, (height - padding) / 4.8)) * unitsPerPixel;
       this.group.scale.setScalar(scale);
       this.group.position.set(((x + width / 2) / this.viewWidth - 0.5) * planeHeight * this.aspect - scale * 0.36,
         (0.5 - (y + height / 2) / this.viewHeight) * planeHeight, -5);

@@ -119,6 +119,7 @@ export function IntroSequence({
         <span>THE PERSONAL TIME RESERVE</span>
         <p>Nothing is lost all at once.<br />Little by little, time becomes yours again.</p>
       </div>
+      <div className="intro-apparatus">
       <button className="intro-sculpture-control" aria-label="Rotate and illuminate the time vessel" aria-describedby="intro-object-hint"
         title="Drag to rotate · hold and release to energise · double-click to reverse"
         onPointerEnter={() => { coverControlRef.current.hovering = true; }}
@@ -167,6 +168,7 @@ export function IntroSequence({
           }
           if (event.key === "Home") { event.preventDefault(); event.stopPropagation(); resetVessel(); }
         }}><span className="visually-hidden">Explore the TIMEVAULT installation</span></button>
+      <div className="intro-apparatus-notes">
       <div className="intro-object-hint" id="intro-object-hint">
         <output className="intro-vessel-feedback" aria-live="polite">{feedback}</output><i>↔</i><span>DRAG TO TURN 360°</span>
         <div className="intro-vessel-tools" aria-label="Explore the vessel without exchanging time">
@@ -178,15 +180,17 @@ export function IntroSequence({
         </div>
         <small>EXPLORATION ONLY · NO TIME EXCHANGED</small>
       </div>
+      <div className="intro-weave-caption" aria-hidden="true">
+        <span>FRAGMENTS BECOME A LIFE.</span>
+        <p>{String(snapshot.account.fragmentCount).padStart(2, "0")} FIVE-MINUTE UNITS IN RESERVE</p>
+      </div>
+      </div>
+      </div>
       <aside className="intro-composition-mark">
         <span>RESERVE SIGNATURE</span>
         <strong>{String(snapshot.account.fragmentCount).padStart(2, "0")}<small>FRAGMENTS</small></strong>
         <p>NOT LOST.<br />BECOMING.</p>
       </aside>
-      <div className="intro-weave-caption" aria-hidden="true">
-        <span>FRAGMENTS BECOME A LIFE.</span>
-        <p>{String(snapshot.account.fragmentCount).padStart(2, "0")} FIVE-MINUTE UNITS IN RESERVE</p>
-      </div>
       <div className="intro-accumulation" aria-label="Time accumulation stages">
         <span>THE GRAMMAR OF TIME</span>
         <div><b>05</b><i>MICRO</i><b>15</b><i>CLUSTER</i><b>30</b><i>SHARD</i><b>60</b><i>RESERVE</i></div>
