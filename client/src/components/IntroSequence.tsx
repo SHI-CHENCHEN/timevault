@@ -178,13 +178,13 @@ export function IntroSequence({
           <button aria-pressed={reversed} onClick={reverseFlow}>{reversed ? "FLOW FORWARD" : "REVERSE FLOW"}</button>
           <button onClick={resetVessel}>RESET VIEW</button>
         </div>
+      </div>
+      </div>
+      </div>
+      <div className="intro-weave-caption">
         <small>EXPLORATION ONLY · NO TIME EXCHANGED</small>
-      </div>
-      <div className="intro-weave-caption" aria-hidden="true">
-        <span>FRAGMENTS BECOME A LIFE.</span>
-        <p>{String(snapshot.account.fragmentCount).padStart(2, "0")} FIVE-MINUTE UNITS IN RESERVE</p>
-      </div>
-      </div>
+        <span aria-hidden="true">FRAGMENTS BECOME A LIFE.</span>
+        <p aria-hidden="true">{String(snapshot.account.fragmentCount).padStart(2, "0")} FIVE-MINUTE UNITS IN RESERVE</p>
       </div>
       <aside className="intro-composition-mark">
         <span>RESERVE SIGNATURE</span>
