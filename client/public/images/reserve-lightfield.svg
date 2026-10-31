@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" fill="none">
+  <defs>
+    <linearGradient id="a" x1="700" y1="0" x2="1400" y2="900" gradientUnits="userSpaceOnUse"><stop stop-color="#b3a5e5" stop-opacity="0"/><stop offset=".45" stop-color="#b3a5e5" stop-opacity=".45"/><stop offset=".8" stop-color="#94c7e3" stop-opacity=".2"/><stop offset="1" stop-color="#94c7e3" stop-opacity="0"/></linearGradient>
+    <linearGradient id="b" x1="500" y1="800" x2="1550" y2="450" gradientUnits="userSpaceOnUse"><stop stop-color="#b7a2df" stop-opacity="0"/><stop offset=".5" stop-color="#b7a2df" stop-opacity=".25"/><stop offset="1" stop-color="#c6e5f5" stop-opacity="0"/></linearGradient>
+    <filter id="h" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="35"/></filter>
+    <filter id="s" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="9"/></filter>
+  </defs>
+  <path d="M1310-180C700 60 690 270 1110 390S1670 620 1110 850" stroke="url(#a)" stroke-width="130" filter="url(#h)"/>
+  <path d="M1340-130C780 70 730 270 1150 390S1660 610 1120 810" stroke="url(#a)" stroke-width="26" filter="url(#s)"/>
+  <path d="M1370-130C800 70 770 270 1170 390S1690 610 1140 810" stroke="url(#a)" stroke-width="1.2"/>
+  <path d="M370 880C800 540 1110 760 1650 490" stroke="url(#b)" stroke-width="90" filter="url(#h)"/>
+  <path d="M420 875C820 570 1120 790 1650 520" stroke="url(#b)" stroke-width=".8"/>
+</svg>
