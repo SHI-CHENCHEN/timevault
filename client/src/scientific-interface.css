@@ -1,0 +1,432 @@
+/* TIMEVAULT / FIELD STUDY 01. Portfolio-led scientific installation interface.
+   Presentation only: existing DOM actions, snapshots and hand fields remain authoritative. */
+:root { --void: #060910; --surface: #0d121d; --text: #edf1f8; --muted: #a8b5c9; --faint: #8a99af; --line: #354154; --violet: #b99af9; --blue: #92d7f1; }
+.app.app.app {
+  --theme-ink: #edf1f8; --theme-soft: #b5c0d2; --theme-muted: #8e9fb7;
+  --theme-line: #364258; --theme-accent: #b99af9; --theme-panel: #101622;
+  --theme-button: #b99af9; --theme-button-ink: #0b0c17;
+  color: var(--theme-ink); font-weight: 400;
+}
+.app.app.app--buy { --theme-accent: #92d7f1; --theme-button: #92d7f1; --theme-button-ink: #071520; }
+.app.app:is(.app--intro, .app--idle, .app--mode_selection, .app--time_selection, .app--confirmation, .app--transaction_processing, .app--transaction_complete, .app--buyback_countdown, .app--buyback_complete, .app--history, .app--reflection, .app--settings) {
+  background: #070c15;
+}
+.app.app:not(.app--intro) .environment-art {
+  display: block; inset: 0; opacity: 0.26;
+  background-image: url("/images/timevault-quantum-chamber-v2.jpg");
+  background-size: cover; background-position: 70% center; background-blend-mode: normal;
+  mask-image: linear-gradient(90deg, #0002, #0008 65%, #000); filter: none;
+  transform: none; animation: none; transition: none; will-change: auto;
+}
+.app.app .environment-art::after { content: none; }
+.app.app::before { background-image: url("/textures/time-grain.svg"); opacity: 0.055; animation: none; }
+.app.app::after { border-color: #b6c9e51a; box-shadow: inset 0 0 110px #03060c66; }
+.app.app .screen-layer { background: transparent; }
+.app.app :is(.screen-layer, .selection-copy, .selection-readout, .selection-field, .time-selector, .reflection-copy), .app.app--intro .intro-sequence > * { animation: none; }
+.app.app .identity-lockup strong { color: #e6ecf7; font-size: 12px; letter-spacing: 0.23em; }
+.app.app :is(.identity-lockup > span, .concept-sequence, .status-line, .reserve-signal > span, .installation-rail, .installation-rail button) { color: #a8b7cc; }
+.app.app .reserve-signal strong { color: #e5edf8; font-family: "SFMono-Regular", Consolas, monospace; font-size: 17px; }
+.app.app :is(.concept-sequence, .state-caption, .state-note, .eyebrow, .receipt-reference, .outcome-heading, .active-time-heading, .installation-rail) { font-family: "SFMono-Regular", Consolas, monospace; letter-spacing: 0.1em; }
+.app.app .time-spine { color: #a6b9d2; }
+.app.app .time-spine time { color: #c9d8e9; font-family: "SFMono-Regular", Consolas, monospace; }
+.app.app .state-caption { color: var(--theme-soft); font-size: 10px; }
+.app.app .state-caption i { color: var(--theme-accent); }
+.app.app .state-caption::before { background: var(--theme-accent); opacity: 0.9; filter: none; width: 22px; }
+.app.app .button { border: 1px solid #62728e80; border-radius: 2px; background: #0c1422c9; color: #e3ebf7; box-shadow: none; min-height: 46px; font-size: 10px; font-weight: 500; letter-spacing: 0.13em; }
+.app.app .button:hover { background: #1c2739; color: #fff; border-color: #a7bbd7; }
+.app.app :is(.button--primary, .peripheral-actions .button--primary, .exchange-receipt .receipt-confirm, .transaction-outcome .outcome-return) { background: var(--theme-button); color: var(--theme-button-ink); border-color: var(--theme-button); box-shadow: none; border-radius: 2px; }
+.app.app :is(.button--primary, .peripheral-actions .button--primary, .exchange-receipt .receipt-confirm, .transaction-outcome .outcome-return):hover { background: #e0d5ff; color: #111223; border-color: #f0e9ff; }
+.app.app--buy :is(.button--primary, .peripheral-actions .button--primary, .exchange-receipt .receipt-confirm, .transaction-outcome .outcome-return):hover { background: #c7efff; color: #0b1823; border-color: #e1f7ff; }
+.app.app :is(.receipt-confirm i, .receipt-confirm b, .outcome-return small, .outcome-return b) { color: var(--theme-button-ink); }
+.app.app :is(button, input):focus-visible { outline: 2px solid var(--theme-accent); outline-offset: 4px; }
+.app.app :is(.idle-statement h1, .mode-experience h1, .selection-copy h1, .exchange-receipt h1, .transaction-outcome h1, .active-time h1, .history-heading h1, .reflection-copy h1, .settings-experience h1) { color: #edf1f8; font-family: "Helvetica Neue", Arial, sans-serif; font-weight: 400; letter-spacing: -0.035em; line-height: 1.08; word-spacing: 0; text-shadow: none; }
+.app.app :is(.selection-copy p, .receipt-note, .receipt-footer > p, .outcome-copy > p, .active-time-copy > p, .archive-introduction p, .reflection-copy > p, .state-note) { color: #b7c4d7; font-size: 13px; line-height: 1.8; letter-spacing: 0.015em; }
+
+/* Cover: one horizontal identity, one measured installation, separate information bands. */
+.app.app.app--intro .environment-art,
+.app.app.app--intro:has(.intro-enter:hover) .environment-art,
+.app.app.app--intro:has(.intro-actions button:hover) .environment-art {
+  inset: 0; opacity: 0.85; background-image: url("/images/timevault-quantum-chamber-v2.jpg");
+  background-size: cover; background-position: center; background-blend-mode: normal;
+  mask-image: none; filter: none;
+  transform: translate3d(calc(var(--parallax-x, 0px) * 0.18), calc(var(--parallax-y, 0px) * 0.18), 0) scale(1.015);
+  transition: transform 600ms ease; will-change: auto;
+}
+.app.app--intro .intro-sequence::before { background: linear-gradient(90deg, #050911c9, #05091166 39%, #05091100 67%); }
+.app.app--intro .intro-sequence::after { background: none; }
+.app.app--intro .intro-concept-line { top: 4.5vh; left: 4.5vw; font-size: 9px; color: #b4c5dc; }
+.app.app--intro .intro-link-status { top: 4.5vh; right: 4.5vw; color: #c1d0e4; }
+.app.app--intro .intro-link-status .status-dot { background: #b99af9; box-shadow: 0 0 9px #a686f144; }
+.app.app--intro .time-spine { left: 4.5vw; top: 11vh; transform: none; max-width: 34%; grid-template-columns: auto minmax(80px, 10vw) auto; animation: none; }
+.app.app.app--intro .intro-wordmark { top: 27%; left: 4.5vw; width: 49%; display: flex; flex-direction: row; gap: 0; font-size: clamp(88px, 7.3vw, 180px); line-height: 1; }
+.app.app.app--intro .intro-wordmark span b { background-image: linear-gradient(105deg, #d9c4ff, #b99af9 55%, #9ca8f3); filter: drop-shadow(0 0 16px #9366f139); background-size: 190% 100%; }
+.app.app.app--intro .intro-wordmark:is(:hover, :focus-visible) span b { filter: drop-shadow(0 0 17px #b990ff77); }
+.app.app.app--intro .intro-wordmark .intro-wordmark__time b {
+  background-image: linear-gradient(135deg, #8bacc8 0%, #e6f3ff 23%, #95b4ce 46%, #e7f6ff 65%, #84a8c9 100%);
+  -webkit-text-stroke: 0.35px #dbeeff66; filter: drop-shadow(0 2px 8px #0007);
+}
+.app.app.app--intro .intro-wordmark .intro-wordmark__vault b {
+  background-image: linear-gradient(135deg, #8b79cc 0%, #d3bbff 23%, #9980d9 46%, #dbc7ff 65%, #8f78cf 100%);
+  -webkit-text-stroke: 0.35px #dacaff66; filter: drop-shadow(0 2px 10px #8060dc2b);
+}
+.app.app--intro .intro-subtitle { left: 4.5vw; top: 42%; max-width: 40%; font-size: 10px; letter-spacing: 0.19em; padding-top: 17px; color: #c7d6e7; }
+.app.app--intro .intro-subtitle::before { background: #a68ed0; opacity: 0.7; filter: none; }
+.app.app--intro .intro-editorial { left: 4.5vw; top: 51%; max-width: 34%; color: #dae4f1; }
+.app.app--intro .intro-editorial > span { display: block; font: 8px "SFMono-Regular", Consolas, monospace; letter-spacing: 0.12em; color: #b3a3d2; }
+.app.app--intro .intro-editorial p { font-size: 14px; line-height: 1.85; margin-top: 18px; color: #c3cfdf; font-weight: 400; }
+.app.app--intro .intro-reserve { top: 4vh; right: 22vw; gap: 14px; color: #b2c4da; }
+.app.app--intro .intro-reserve strong { font-family: "SFMono-Regular", Consolas, monospace; color: #ecf2fa; font-size: clamp(16px, 1.3vw, 26px); }
+.app.app--intro .intro-accumulation { left: 4.5vw; top: auto; bottom: 25%; width: 290px; color: #a6b7ce; }
+.app.app--intro .intro-accumulation > span { font: 7px "SFMono-Regular", Consolas, monospace; letter-spacing: 0.14em; margin-bottom: 14px; }
+.app.app--intro .intro-accumulation b { font: 20px "SFMono-Regular", Consolas, monospace; color: #dbe4f0; }
+.app.app--intro .intro-accumulation i { font-size: 8px; color: #a6b7ce; }
+.app.app--intro .intro-composition-mark { left: calc(4.5vw + 325px); right: auto; top: auto; bottom: 25%; width: 105px; color: #a6b7ce; border-left-color: #6f819e55; }
+.app.app--intro .intro-composition-mark strong { color: #c7b7ee; font: 24px "SFMono-Regular", Consolas, monospace; }
+.app.app--intro .intro-composition-mark p { color: #a6b7ce; }
+.app.app--intro .intro-enter { left: 4.5vw; bottom: 13.5%; min-height: 58px; width: 312px; border-radius: 2px; padding: 0 20px; color: #0e1020; background: #b99af9; border: 1px solid #cfbaff; box-shadow: 0 7px 28px #0004; }
+.app.app--intro .intro-enter:hover { color: #0e1020; background: #dbcbff; border-color: #eee4ff; }
+.app.app--intro .intro-enter > span { font-size: 11px; letter-spacing: 0.12em; }
+.app.app--intro .intro-enter > span small { color: #35304d; font-size: 7px; }
+.app.app--intro .intro-enter i { color: #342c50; background: transparent; border-color: #594f7e66; border-radius: 0; width: 32px; height: 32px; }
+.app.app--intro .intro-apparatus { left: 49%; right: 5%; top: 15%; bottom: 18%; }
+.app.app--intro .intro-apparatus-notes { width: min(100%, 380px); padding-top: 12px; }
+.app.app--intro .intro-object-hint { color: #c5d4e8; gap: 7px 12px; }
+.app.app--intro .intro-vessel-tools button { color: #becce0; border-color: #7b8fab66; font-family: "SFMono-Regular", Consolas, monospace; background: #07101a60; border-radius: 0; }
+.app.app--intro .intro-vessel-tools button:is(:hover, [aria-pressed="true"]) { color: #e5d8ff; background: #392b5355; border-color: #bc9df4; }
+.app.app--intro .intro-actions { left: 4.5vw; right: 34vw; bottom: 4vh; }
+.app.app--intro .intro-actions button { background: #080e1799; border-left: 1px solid #91a4c055; padding: 0 16px; color: #e1e8f4; min-height: 52px; }
+.app.app--intro .intro-actions button strong { font-size: 9px; }
+.app.app--intro .intro-actions button small { font: 7px "SFMono-Regular", Consolas, monospace; color: #ad94e1; }
+.app.app--intro .intro-actions button:is(:hover, :focus-visible) { background: #1c1832d9; padding-left: 20px; color: #fff; border-color: #b99af9; }
+.app.app--intro .intro-actions button:nth-child(2):is(:hover, :focus-visible) { background: #112435d9; border-color: #92d7f1; }
+.app.app--intro .intro-weave-caption { right: 4.5vw; width: 27%; bottom: 4vh; color: #b2c3dc; }
+
+/* Reserve console: commands under the text, a larger specimen on the right. */
+.app.app.app--idle.app--entered .idle-experience {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); grid-template-rows: minmax(0, 1fr) auto auto;
+  grid-template-areas: "copy vessel" "actions vessel" "account account";
+  gap: 25px 6vw; padding: clamp(140px, 17vh, 220px) 4.5vw 72px;
+}
+.app.app.app--idle.app--entered .environment-art { opacity: 0.58; background-image: url("/images/timevault-quantum-chamber-v2.jpg"); background-position: center; mask-image: linear-gradient(90deg, #0001, #000a); }
+.app.app--idle .idle-statement h1 { font-size: clamp(35px, 3.3vw, 68px); margin-top: 22px; }
+.app.app--idle .idle-statement > span { color: #baa5e2; font: 9px "SFMono-Regular", Consolas, monospace; letter-spacing: 0.12em; }
+.app.app--idle .idle-statement > p { color: #9eafc8; font-size: 9px; margin-top: 24px; }
+.app.app--idle .idle-reserve-annotation { margin-top: 28px; padding-top: 18px; border-color: #7587a54d; width: 100%; display: flex; align-items: center; justify-content: space-between; }
+.app.app--idle .idle-reserve-annotation strong { font: 29px "SFMono-Regular", Consolas, monospace; }
+.app.app--idle .idle-reserve-annotation span { color: #9eafc8; font-size: 8px; }
+.app.app.app--idle.app--entered .idle-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.app.app.app--idle.app--entered .idle-actions > button:nth-child(n) { min-height: 74px; padding: 14px 16px; border: 1px solid #53678377; border-left: 2px solid #b99af9; background: #0d1420df; color: #e6edf7; box-shadow: none; }
+.app.app.app--idle.app--entered .idle-actions > button:nth-child(2) { border-left-color: #92d7f1; }
+.app.app.app--idle.app--entered .idle-actions > button:nth-child(3) { border-left-color: #9eaec5; }
+.app.app.app--idle.app--entered .idle-actions > button:nth-child(4) { border-left-color: #8e83b5; }
+.app.app.app--idle.app--entered .idle-actions > button:nth-child(n):is(:hover, :focus-visible) { background: #20283ddf; border-color: #b2c0dc; box-shadow: none; }
+.app.app.app--idle.app--entered .idle-actions > button:nth-child(n) strong { color: #e9edf7; font-size: 10px; }
+.app.app.app--idle.app--entered .idle-actions > button:nth-child(n) span { color: #a6b7d0; font: 7px "SFMono-Regular", Consolas, monospace; }
+.app.app.app--idle.app--entered .idle-actions > button:nth-child(n) small { color: #9dacc3; font-size: 7px; }
+.app.app--idle .account-summary { gap: 24px; border-color: #6e819c55; }
+.app.app--idle .account-summary span { color: #99acc6; font-size: 8px; }
+.app.app--idle .account-summary strong { font: 20px "SFMono-Regular", Consolas, monospace; color: #d9e6f5; }
+
+/* Each stage has a different optical construction, beyond a change of hue. */
+.app.app.app--time_selection:not(.app--buy) .environment-art {
+  background-image: url("/images/timevault-store-field-v2.jpg"); background-position: right center; opacity: 0.62; mask-image: none;
+}
+.app.app.app--buy.app--time_selection .environment-art {
+  background-image: url("/images/timevault-reclaim-field-v2.jpg"); background-position: center; opacity: 0.62; mask-image: none;
+}
+.app.app.app--confirmation:not(.app--buy) .environment-art,
+.app.app.app--transaction_processing:not(.app--buy) .environment-art,
+.app.app.app--transaction_complete:not(.app--buy) .environment-art {
+  background-image: url("/images/timevault-store-field-v2.jpg"); background-size: 125% auto; background-position: right 70%; opacity: 0.3; mask-image: none;
+}
+.app.app.app--buy:is(.app--confirmation, .app--transaction_processing, .app--buyback_complete) .environment-art {
+  background-image: url("/images/timevault-reclaim-field-v2.jpg"); background-size: 120% auto; background-position: right 70%; opacity: 0.3; mask-image: none;
+}
+.app.app.app--buyback_countdown .environment-art {
+  background-image: url("/images/timevault-reclaim-field-v2.jpg"); background-size: 145% auto; background-position: center 60%; opacity: 0.34; mask-image: none;
+}
+.app.app.app--history .environment-art {
+  background-image: url("/images/timevault-memory-strata-v2.jpg"); background-position: right center; opacity: 0.6; mask-image: none;
+}
+.app.app.app--reflection .environment-art { background-image: url("/images/timevault-quantum-chamber-v2.jpg"); }
+.app.app.app--reflection:has(.reflection-steps button:nth-child(2).is-active) .environment-art { background-image: url("/images/timevault-store-field-v2.jpg"); }
+.app.app.app--reflection:has(.reflection-steps button:nth-child(3).is-active) .environment-art { background-image: url("/images/timevault-reclaim-field-v2.jpg"); }
+/* The exchange is an instrument: number controls on the left, specimen field on the right. */
+.app.app.app--entered .selection-experience {
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.2fr);
+  grid-template-rows: auto minmax(min-content, 1fr) auto auto;
+  grid-template-areas: "copy field" "readout field" "selector field" "actions field";
+  gap: 22px 7vw; padding: clamp(140px, 17vh, 215px) 4.5vw 76px;
+}
+.app.app .selection-copy { width: 100%; max-width: none; }
+.app.app .selection-copy h1 { margin-top: 24px; font-size: clamp(35px, 3vw, 60px); }
+.app.app .selection-copy p { margin-top: 20px; }
+.app.app .selection-readout { display: grid; grid-template-columns: auto 1fr; align-content: center; align-items: baseline; column-gap: 18px; row-gap: 8px; justify-self: start; border: 0; padding: 0; width: 100%; }
+.app.app .selection-readout > strong { color: #eff4ff; font: clamp(74px, 7vw, 140px)/1 "SFMono-Regular", Consolas, monospace; letter-spacing: -0.07em; }
+.app.app .selection-readout > span { color: var(--theme-accent); font-size: 11px; }
+.app.app .selection-readout > small { grid-column: 1 / -1; width: 100%; margin-top: 18px; padding-top: 13px; border-color: #455673; color: #adbed5; font-size: 9px; }
+.app.app .selection-readout small b { color: var(--theme-accent); }
+.app.app .selection-field { padding: 0; min-width: 0; gap: 20px; color: #bdcee5; }
+.app.app .selection-field > span { font: 8px "SFMono-Regular", Consolas, monospace; border-bottom: 1px solid #566b8b55; padding-bottom: 18px; color: #b1c0d5; }
+.app.app .selection-field > span i { color: var(--theme-accent); }
+.app.app .selection-field > small { color: #9aacc7; font-size: 8px; }
+.app.app .fragment-clock { width: min(100%, 55vh, 640px); height: auto; background: none; }
+.app.app .fragment-clock circle { stroke: #596780; }
+.app.app .fragment-clock line { stroke: #697b97; }
+.app.app .fragment-clock line.is-filled { stroke: var(--theme-accent); }
+.app.app .fragment-clock .fragment-clock__slot { fill: #151b2a; stroke: #53627d; }
+.app.app .fragment-clock .fragment-clock__slot.is-filled { fill: #b99af922; }
+.app.app .fragment-clock__center :is(span, small) { color: #9fb1cc; }
+.app.app .fragment-clock__center b { color: #e5edfa; font: 38px "SFMono-Regular", Consolas, monospace; }
+.app.app .selection-experience .time-selector { width: 100%; grid-template-columns: 42px minmax(0, 1fr) 42px; grid-template-rows: 72px auto; padding: 0; gap: 7px; }
+.app.app .selection-experience .time-options { min-height: 72px; height: 72px; border-top: 1px solid #596d8a77; gap: 0; }
+.app.app .selection-experience .time-option:nth-child(n) { min-height: 72px; background: #0c1421b0; color: #b5c5db; border-radius: 0; padding: 12px 0 8px; }
+.app.app .selection-experience .time-option:nth-child(n) strong { font: 22px "SFMono-Regular", Consolas, monospace; }
+.app.app .selection-experience .time-option:nth-child(n) span { color: #9babc4; font-size: 7px; }
+.app.app .selection-experience .time-option.is-selected { background: #b99af926; border: 1px solid #b99af980; }
+.app.app--buy .selection-experience .time-option.is-selected { background: #92d7f122; border-color: #92d7f180; }
+.app.app .selection-experience .time-option.is-selected strong { color: #f0e9ff; }
+.app.app .selector-step { color: #b8c8e0; font-size: 6px; min-width: 0; letter-spacing: 0.03em; }
+.app.app .selector-instruction { margin-top: 9px; color: #97a9c4; font-size: 7px; }
+.app.app .peripheral-actions { justify-content: flex-start; gap: 12px; margin: 0; }
+.app.app .peripheral-actions .button { min-width: 128px; }
+
+/* Confirmation and completion: the calibrated dial precedes the reading column. */
+.app.app.app--confirmation .screen-layer.exchange-receipt,
+.app.app.app--entered .screen-layer.transaction-outcome,
+.app.app.app--entered .screen-layer.active-time {
+  inset: 0; width: calc(100% - 9vw); max-width: 1360px;
+  padding: clamp(140px, 16vh, 210px) 0 70px; background: transparent; justify-content: center;
+}
+.app.app :is(.receipt-heading, .receipt-balance, .outcome-heading, .outcome-account, .active-time-heading, .active-time-footer) { border-color: #5a6b8655; }
+.app.app :is(.receipt-reference, .receipt-direction, .receipt-note, .receipt-duration > span, .receipt-balance span, .receipt-balance > small, .outcome-eyebrow, .outcome-heading > span, .outcome-account span, .outcome-footer > span, .outcome-clock__legend, .active-time-copy > span, .active-time-copy dt, .active-time-footer > p) { color: #a8bad4; }
+.app.app :is(.receipt-body, .outcome-body, .active-time-body) { grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 7vw; padding: 32px 0 40px; }
+.app.app :is(.receipt-copy, .outcome-copy, .active-time-copy) { order: 2; }
+.app.app :is(.receipt-dial, .outcome-clock, .active-time-clock) { order: 1; justify-self: center; }
+.app.app :is(.exchange-receipt h1, .transaction-outcome h1, .active-time h1) { font-size: clamp(38px, 3.8vw, 68px); margin: 19px 0 24px; }
+.app.app .receipt-duration strong { font: clamp(80px, 7vw, 130px)/1 "SFMono-Regular", Consolas, monospace; letter-spacing: -0.07em; color: #e9f0fc; }
+.app.app .receipt-dial { width: min(35vw, 40vh, 410px); margin: 0 0 20px; }
+.app.app :is(.receipt-dial__edge, .receipt-dial line, .outcome-clock__edge, .outcome-clock line, .active-time-clock__edge, .active-time-clock line) { stroke: #61748e; }
+.app.app :is(.receipt-dial__track, .outcome-clock__track, .active-time-clock__track) { stroke: #35465f; }
+.app.app :is(.receipt-dial__amount, .active-time-clock__remaining) { stroke: var(--theme-accent); }
+.app.app :is(.receipt-dial__unit, .outcome-clock__unit) { fill: #0c1321; stroke: #5c6f8d; }
+.app.app :is(.receipt-dial__unit.is-filled, .outcome-clock__unit.is-filled) { fill: var(--theme-accent); stroke: #e3d8ff; }
+.app.app :is(.receipt-dial__center > span, .receipt-dial__center > small, .receipt-dial__legend, .outcome-clock__value > span, .outcome-clock__value > small, .active-time-clock__value > span, .active-time-clock__value small) { color: #a6b9d3; }
+.app.app :is(.receipt-dial__center > strong, .outcome-clock__value > strong, .active-time-clock__value time) { font-family: "SFMono-Regular", Consolas, monospace; color: #e4edfa; }
+.app.app :is(.receipt-balance strong, .outcome-account strong, .active-time-copy dd) { font: 24px "SFMono-Regular", Consolas, monospace; color: #dbe7f7; }
+.app.app .receipt-balance { background: #0e1624a0; padding: 20px 24px; }
+.app.app .receipt-balance > i { color: var(--theme-accent); }
+.app.app .receipt-balance > small { border-color: #546786; }
+.app.app .receipt-footer { margin-top: 24px; }
+.app.app .outcome-clock { width: min(35vw, 42vh, 420px); }
+.app.app .outcome-clock__value { background: transparent; }
+.app.app .outcome-clock__value > strong { font-size: clamp(80px, 7vw, 120px); }
+.app.app .outcome-account { background: #0d1522b0; padding: 22px 26px; }
+.app.app .outcome-status > i { background: var(--theme-accent); }
+.app.app .active-time-clock { width: min(39vw, 47vh, 480px); }
+.app.app .active-time-clock__value time { font-size: clamp(50px, 5.6vw, 88px); letter-spacing: -0.07em; }
+.app.app .active-time-copy dl { gap: 35px; }
+.app.app .active-time--focused .active-time-body { grid-template-columns: 1fr; }
+.app.app .active-time--focused .active-time-clock { width: min(53vh, 460px); }
+.app.app .active-time .active-time-focus { color: #d2e9f8; background: #101c2c; border-color: #627e9d; }
+
+/* Archive: one memory instrument on the left; selected evidence and records on the right. */
+.app.app.app--history .history-experience--atlas {
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  grid-template-areas: "heading heading" "orbit intro" "orbit records" "totals totals";
+  gap: 24px 7vw; padding: clamp(136px, 16vh, 210px) 4.5vw 76px; background: transparent;
+}
+.app.app .history-heading { border-bottom: 1px solid #54678355; padding-bottom: 20px; }
+.app.app .history-heading h1 { font-size: clamp(34px, 2.8vw, 54px); margin-top: 14px; }
+.app.app .archive-introduction { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 20px; align-self: start; }
+.app.app .archive-introduction > span { grid-column: 1 / -1; color: #b2c4dd; font: 9px "SFMono-Regular", Consolas, monospace; letter-spacing: 0.12em; }
+.app.app .archive-introduction p { grid-column: 1 / -1; margin: 0; font-size: 12px; }
+.app.app .archive-reserve { padding-top: 14px; gap: 9px; border-color: #546b8a66; }
+.app.app .archive-reserve small { color: #91a6c3; font-size: 8px; }
+.app.app .archive-reserve strong { color: #d5e4f6; font: 24px "SFMono-Regular", Consolas, monospace; }
+.app.app .archive-legend { margin: 0; align-self: end; flex-wrap: wrap; color: #a9b9d1; font-size: 7px; gap: 8px; }
+.app.app .archive-legend i { background: #b99af9; }
+.app.app .archive-legend i:nth-of-type(2) { margin-left: 10px; background: #92d7f1; }
+.app.app .archive-dial { width: min(100%, 43vh, 520px); }
+.app.app .archive-dial svg :is(circle, line) { stroke: #607590; }
+.app.app .archive-memory { background: none; }
+.app.app .archive-memory time { color: #b2c6e1; font: 15px "SFMono-Regular", Consolas, monospace; }
+.app.app .archive-memory > strong { color: #e5edf9; font: clamp(44px, 4vw, 76px)/1 "SFMono-Regular", Consolas, monospace; letter-spacing: -0.06em; }
+.app.app .archive-memory :is(span, small, p) { color: #9aafcb; }
+.app.app .archive-records { align-self: stretch; max-height: none; background: #0a1220b0; padding: 0 18px; }
+.app.app .archive-filters { gap: 20px; padding: 8px 0 14px; border-color: #586c8b55; }
+.app.app .archive-filters button { color: #9bb0cf; font-size: 8px; }
+.app.app .archive-filters button[aria-pressed="true"] { color: #e0d3ff; box-shadow: 0 2px 0 #b99af9; }
+.app.app .archive-record { color: #b8c9df; border-color: #4b617d44; min-height: 58px; }
+.app.app .archive-record.is-active { color: #ede6ff; background: #b99af918; }
+.app.app .archive-record > small { color: #a592c8; }
+.app.app .history-totals { border-color: #54698355; padding-top: 18px; }
+.app.app .history-totals span { color: #96abc8; }
+.app.app .history-totals strong { color: #d6e4f5; font: 22px "SFMono-Regular", Consolas, monospace; }
+.app.app .archive-scrubber :is(button, span) { color: #b0c2de; }
+.app.app .archive-scrubber { margin-top: 12px; gap: 8px; }
+.app.app .archive-scrubber input { accent-color: #b99af9; }
+
+/* Reflection: same full-plane hand field, with calmer scientific chrome at its edges. */
+.app.app.app--reflection .environment-art { opacity: 0.15; mask-image: linear-gradient(90deg, #0001, #0004 65%, #000); }
+.app.app.app--reflection.app--hand-mirror .environment-art { opacity: 0.08; }
+.app.app .reflection-experience {
+  grid-template-columns: minmax(230px, .8fr) minmax(360px, 1.4fr) minmax(240px, .7fr);
+  grid-template-rows: minmax(0, 1fr) auto; grid-template-areas: "copy mirror panel" "steps question controls";
+  gap: 26px; min-height: 100%; padding: clamp(150px, 18vh, 210px) 4.5vw 82px; background: transparent;
+}
+.app.app .reflection-index { position: absolute; right: 4.5vw; top: 13vh; color: #8da5c5; font: 8px "SFMono-Regular", Consolas, monospace; }
+.app.app .reflection-copy h1 { font-size: clamp(32px, 2.8vw, 54px); margin-top: 22px; }
+.app.app .reflection-copy > p { font-size: 12px; margin-top: 24px; }
+.app.app .reflection-mirror { --mirror-size: min(35vw, 50vh, 570px); background: #1020391a; border-color: #6b5c9944; }
+.app.app .reflection-mirror__center { background: #0a101bdd; border-color: #7389aa55; }
+.app.app .reflection-mirror__center strong { color: #dce8f9; font-family: "SFMono-Regular", Consolas, monospace; }
+.app.app .reflection-mirror__center :is(span, small) { color: #a4b6d1; }
+.app.app .hand-mirror-panel { max-width: none; border: 1px solid #52658377; border-top-color: #aa8bea; background: #0b121ee8; padding: 18px; gap: 12px; box-shadow: none; }
+.app.app .hand-mirror-panel__heading > span { color: #8da4c2; font: 7px "SFMono-Regular", Consolas, monospace; line-height: 1.6; }
+.app.app .hand-mirror-panel__heading strong { color: #d5dff0; font-size: 9px; }
+.app.app .hand-mirror-panel__heading em { color: #acbcd3; font-size: 8px; }
+.app.app .hand-mirror-panel__signals span { color: #a8b9d3; font-size: 8px; letter-spacing: 0.045em; }
+.app.app .hand-mirror-panel__signals .is-detected { color: #cbb5ff; }
+.app.app .hand-mirror-panel :is(small, p) { color: #a3b3ca; font-size: 8px; letter-spacing: 0.03em; }
+.app.app .hand-mirror-panel > .button { color: #131224; background: #b99af9; border-color: #cfbaff; border-radius: 2px; min-height: 40px; font-size: 8px; }
+.app.app .hand-mirror-panel > .button:hover { color: #131224; background: #dccbff; }
+.app.app .reflection-steps { gap: 5px; }
+.app.app .reflection-steps button { background: #0f1828c7; border: 1px solid #586b8b66; min-height: 66px; color: #a5b9d5; padding: 12px; }
+.app.app .reflection-steps button.is-active { background: #30233e; border-color: #b99af9; color: #efe6ff; }
+.app.app .reflection-experience blockquote { border: 0; border-top: 1px solid #5b6c8755; padding: 14px 0 0; }
+.app.app .reflection-experience blockquote > span { color: #a2b5d2; font-size: 8px; }
+.app.app .reflection-experience blockquote p { color: #d9e5f5; font-size: 14px; line-height: 1.5; letter-spacing: 0.02em; margin-top: 12px; }
+.app.app .reflection-controls { gap: 8px; }
+.app.app .reflection-controls > span { color: #91a9c8; font-size: 7px; }
+.app.app .mode-experience { padding: 18vh 9vw 90px; text-align: left; align-content: center; }
+.app.app .mode-experience h1 { font-size: clamp(40px, 4.5vw, 80px); }
+.app.app .mode-actions { justify-content: flex-start; gap: 18px; margin-top: 35px; }
+.app.app .mode-actions > button { background: #111a2ade; border: 1px solid #7383a47a; border-top-color: #b99af9; color: #e3eaf6; border-radius: 2px; }
+.app.app .mode-actions > button:nth-child(2) { border-top-color: #92d7f1; }
+
+@media (max-width: 1280px) and (min-width: 821px) {
+  .app.app .reflection-experience { grid-template-columns: minmax(240px, 0.9fr) minmax(330px, 1.25fr); grid-template-rows: auto auto auto; grid-template-areas: "copy mirror" "panel mirror" "steps question"; gap: 20px 28px; padding: 136px 4.5vw 112px; }
+  .app.app .hand-mirror-panel { width: 100%; max-width: 360px; padding: 14px; }
+  .app.app .hand-mirror-panel__signals { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+  .app.app .reflection-copy h1 { font-size: 36px; margin-top: 16px; }
+  .app.app .reflection-copy > p { margin-top: 15px; }
+  .app.app .reflection-controls { position: absolute; bottom: 60px; right: 4.5vw; }
+  .app.app .reflection-mirror { --mirror-size: min(40vw, 48vh); }
+  .app.app--intro .intro-composition-mark { display: none; }
+  .app.app--intro .intro-weave-caption { display: none; }
+  .app.app--intro .intro-actions { right: 4.5vw; }
+}
+@media (max-height: 800px) and (min-width: 821px) {
+  .app.app--intro .intro-editorial { top: 51%; }
+  .app.app--intro .intro-editorial p { margin-top: 12px; font-size: 12px; }
+  .app.app--intro .intro-accumulation { bottom: 24%; }
+  .app.app--intro .intro-accumulation > span { display: none; }
+  .app.app--intro .intro-enter { min-height: 50px; bottom: 13%; }
+  .app.app.app--entered .selection-experience { padding-top: 128px; gap: 14px 6vw; }
+  .app.app .selection-copy h1 { font-size: 34px; margin-top: 18px; }
+  .app.app .selection-copy p { margin-top: 12px; }
+  .app.app .selection-readout > strong { font-size: 78px; }
+  .app.app .selection-readout > small { margin-top: 10px; padding-top: 10px; }
+  .app.app .selection-experience .time-option:nth-child(n) { min-height: 58px; }
+  .app.app .selection-experience .time-option:nth-child(n) strong { font-size: 19px; }
+  .app.app :is(.receipt-body, .outcome-body, .active-time-body) { padding: 22px 0 30px; }
+  .app.app :is(.exchange-receipt h1, .transaction-outcome h1, .active-time h1) { font-size: 40px; }
+  .app.app .reflection-experience { padding-top: 125px; padding-bottom: 96px; }
+  .app.app .reflection-steps button { min-height: 54px; }
+}
+@media (max-height: 800px) and (min-width: 821px) {
+  .app.app.app--confirmation .screen-layer.exchange-receipt,
+  .app.app.app--entered .screen-layer.transaction-outcome,
+  .app.app.app--entered .screen-layer.active-time { padding: 115px 0 65px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #43546f transparent; }
+  .app.app .receipt-heading { padding-bottom: 14px; }
+  .app.app :is(.receipt-body, .outcome-body, .active-time-body) { padding: 20px 0 26px; }
+  .app.app :is(.exchange-receipt h1, .transaction-outcome h1, .active-time h1) { font-size: 34px; margin: 12px 0 14px; }
+  .app.app .receipt-duration strong { font-size: 76px; }
+  .app.app .receipt-note { margin-top: 16px; font-size: 9px; line-height: 1.6; }
+  .app.app .receipt-dial { width: min(32vw, 31vh); }
+  .app.app .receipt-balance { padding: 14px 20px; }
+  .app.app .receipt-balance strong { font-size: 21px; }
+  .app.app .receipt-footer { margin-top: 18px; }
+  .app.app .exchange-receipt .button { min-height: 52px; }
+  .app.app .outcome-clock { width: min(32vw, 33vh); }
+  .app.app .outcome-clock__value > strong { font-size: 78px; }
+  .app.app .outcome-account { padding: 18px 24px; }
+  .app.app .outcome-footer { padding-top: 20px; }
+  .app.app .active-time-clock { width: min(32vw, 34vh); }
+}
+@media (max-width: 820px) {
+  .app.app .identity-lockup strong { font-size: 10px; }
+  .app.app .concept-sequence { display: none; }
+  .app.app:not(.app--intro) .environment-art { opacity: 0.21; background-position: 68% center; }
+  .app.app.app--intro .environment-art { opacity: 0.75; background-position: 66% center; }
+  .app.app--intro .intro-sequence::before { background: linear-gradient(180deg, #060b1480, #060b1422 65%, #060b1466); }
+  .app.app--intro .intro-concept-line { left: 6vw; top: 4vh; font-size: 5px; gap: 6px; }
+  .app.app--intro .intro-link-status { top: auto; bottom: 10px; right: 6vw; font-size: 6px; }
+  .app.app--intro .time-spine { left: 6vw; top: 10%; max-width: 65%; grid-template-columns: auto 60px auto; gap: 8px; }
+  .app.app.app--intro .intro-wordmark { top: 19%; left: 6vw; width: 88%; font-size: clamp(39px, 10.5vw, 76px); }
+  .app.app--intro .intro-subtitle { top: 28%; left: 6vw; max-width: 88%; font-size: 6px; padding-top: 10px; }
+  .app.app--intro .intro-editorial, .app.app--intro .intro-accumulation, .app.app--intro .intro-composition-mark { display: none; }
+  .app.app--intro .intro-reserve { top: 6.5%; right: 6vw; display: grid; padding: 0; border: 0; gap: 5px; }
+  .app.app--intro .intro-reserve span { font-size: 6px; }
+  .app.app--intro .intro-reserve strong { font-size: 13px; }
+  .app.app--intro .intro-apparatus { left: 5%; right: 5%; top: 33%; bottom: 22%; }
+  .app.app--intro .intro-apparatus-notes { width: 100%; }
+  .app.app--intro .intro-object-hint > :is(output, span) { font-size: 6px; }
+  .app.app--intro .intro-vessel-tools button { font-size: 6px; min-height: 28px; padding: 6px 8px; }
+  .app.app--intro .intro-enter { left: 6vw; bottom: 12%; width: 64%; min-height: 48px; padding: 0 14px; }
+  .app.app--intro .intro-enter > span { font-size: 9px; }
+  .app.app--intro .intro-enter > span small { font-size: 6px; }
+  .app.app--intro .intro-enter i { width: 27px; height: 27px; }
+  .app.app--intro .intro-actions { left: 6vw; right: 6vw; bottom: 3.5%; }
+  .app.app--intro .intro-actions button { padding: 0 8px; min-height: 42px; }
+  .app.app--intro .intro-actions button strong { font-size: 6px; }
+  .app.app--intro .intro-actions button:is(:hover, :focus-visible) { padding-left: 8px; }
+  .app.app--intro .intro-weave-caption { display: none; }
+  .app.app.app--idle.app--entered .idle-experience { inset: 126px 0 56px; padding: 25px 24px 38px; grid-template-columns: 1fr; grid-template-rows: auto 340px auto auto; grid-template-areas: "copy" "vessel" "actions" "account"; gap: 25px; overflow-y: auto; }
+  .app.app--idle .idle-statement h1 { font-size: 35px; }
+  .app.app--idle .idle-reserve-annotation strong { font-size: 23px; }
+  .app.app .account-summary { grid-template-columns: 1fr 1fr; }
+  .app.app.app--entered .selection-experience { inset: 126px 0 56px; padding: 24px 24px 42px; overflow-y: auto; grid-template-columns: 1fr; grid-template-rows: auto auto 310px auto auto; grid-template-areas: "copy" "readout" "field" "selector" "actions"; gap: 26px; }
+  .app.app .selection-copy h1 { font-size: 33px; }
+  .app.app .selection-readout > strong { font-size: 80px; }
+  .app.app .selection-field { min-height: 300px; }
+  .app.app .fragment-clock { width: min(100%, 250px); }
+  .app.app .peripheral-actions .button { min-width: 0; flex: 1; }
+  .app.app.app--confirmation .screen-layer.exchange-receipt,
+  .app.app.app--entered .screen-layer.transaction-outcome,
+  .app.app.app--entered .screen-layer.active-time { inset: 126px 0 56px; width: calc(100% - 48px); padding: 24px 0 40px; justify-content: start; overflow-y: auto; }
+  .app.app :is(.receipt-body, .outcome-body, .active-time-body) { grid-template-columns: 1fr; gap: 24px; padding: 28px 0 35px; }
+  .app.app :is(.receipt-copy, .outcome-copy, .active-time-copy) { order: 1; }
+  .app.app :is(.receipt-dial, .outcome-clock, .active-time-clock) { order: 2; width: min(100%, 270px); justify-self: center; }
+  .app.app :is(.exchange-receipt h1, .transaction-outcome h1, .active-time h1) { font-size: 38px; }
+  .app.app .receipt-balance { padding: 16px 12px; gap: 10px; }
+  .app.app .receipt-balance strong { font-size: 17px; }
+  .app.app .outcome-account { padding: 18px 12px; gap: 12px; }
+  .app.app .outcome-account strong { font-size: 17px; }
+  .app.app .active-time-clock__value time { font-size: 58px; }
+  .app.app.app--history .history-experience--atlas { inset: 126px 0 56px; padding: 24px 24px 40px; grid-template-columns: 1fr; grid-template-rows: repeat(5, auto); grid-template-areas: "heading" "intro" "orbit" "records" "totals"; overflow-y: auto; gap: 30px; }
+  .app.app .history-heading { align-items: start; }
+  .app.app .history-heading h1 { font-size: 32px; }
+  .app.app .archive-introduction { gap: 14px; }
+  .app.app .archive-dial { width: min(78vw, 340px); }
+  .app.app .archive-records { min-height: 140px; }
+  .app.app .history-totals strong { font-size: 17px; }
+  .app.app .reflection-experience { inset: 126px 0 56px; padding: 26px 24px 110px; min-height: 0; overflow-y: auto; grid-template-columns: 1fr; grid-template-rows: repeat(6, auto); grid-template-areas: "copy" "mirror" "panel" "steps" "question" "controls"; gap: 28px; align-content: start; }
+  .app.app .reflection-index { display: none; }
+  .app.app .reflection-copy h1 { font-size: 36px; }
+  .app.app .reflection-mirror { --mirror-size: min(75vw, 350px); }
+  .app.app .hand-mirror-panel { width: 100%; max-width: none; }
+  .app.app .reflection-steps { width: 100%; }
+  .app.app .reflection-controls { position: static; justify-self: stretch; display: flex; }
+  .app.app .reflection-controls .button { flex: 1; }
+  .app.app .reflection-experience blockquote { width: 100%; max-width: none; }
+  .app.app .mode-experience { inset: 126px 0 56px; padding: 24px; overflow-y: auto; }
+  .app.app .mode-actions { flex-direction: column; width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app.app.app--intro .environment-art,
+  .app.app.app--intro:has(.intro-enter:hover) .environment-art,
+  .app.app.app--intro:has(.intro-actions button:hover) .environment-art { transform: none; transition: none; }
+}

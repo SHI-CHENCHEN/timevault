@@ -12,6 +12,7 @@ import "./chromatic-theme.css";
 import "./ether-theme.css";
 import "./nebula-refinement.css";
 import "./archive-reserve-refinement.css";
+import "./scientific-interface.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
