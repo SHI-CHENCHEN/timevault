@@ -1,38 +1,45 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1672" height="941" viewBox="0 0 1672 941">
   <defs>
     <radialGradient id="pulse">
-      <stop offset=".0" stop-color="#c2f9ff" stop-opacity="1">
-        <animate attributeName="stop-color" values="#c2f9ff;#88b9ff;#9fefdc;#c2f9ff" dur="6.4s" repeatCount="indefinite" />
+      <stop stop-color="#c2f9ff" />
+      <stop offset=".28" stop-color="#38d9ff">
+        <animate attributeName="stop-color" values="#55d9ff;#748fff;#61e4d6;#55d9ff" dur="3.8s" repeatCount="indefinite" />
       </stop>
-      <stop offset=".33" stop-color="#38d9ff" stop-opacity="1">
-        <animate attributeName="stop-color" values="#38d9ff;#668bff;#42d9cc;#38d9ff" dur="6.4s" repeatCount="indefinite" />
+      <stop offset=".68" stop-color="#38d9ff" stop-opacity=".7">
+        <animate attributeName="stop-color" values="#55d9ff;#748fff;#61e4d6;#55d9ff" dur="3.8s" repeatCount="indefinite" />
       </stop>
-      <stop offset=".72" stop-color="#38d9ff" stop-opacity=".66">
-        <animate attributeName="stop-color" values="#38d9ff;#668bff;#42d9cc;#38d9ff" dur="6.4s" repeatCount="indefinite" />
-      </stop>
-      <stop offset="1" stop-color="#7a8ae8" stop-opacity="0" />
+      <stop offset="1" stop-color="#38d9ff" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="glint">
+      <stop stop-color="#e2faff" />
+      <stop offset=".42" stop-color="#e2faff" stop-opacity=".7" />
+      <stop offset="1" stop-color="#e2faff" stop-opacity="0" />
     </radialGradient>
   </defs>
 
   <!-- Local light follows the refractions in the matching fixed background. -->
   <g>
-    <animateMotion path="M 768 143 C 1030 97 1185 84 1315 92 S 1560 44 1740 -30" dur="5.7s" begin="-1.8s" rotate="auto" repeatCount="indefinite" />
-    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.13;.82;1" dur="5.7s" begin="-1.8s" repeatCount="indefinite" />
+    <animateMotion path="M 768 143 C 1030 97 1185 84 1315 92 S 1560 44 1740 -30" dur="4.1s" begin="-1.8s" rotate="auto" repeatCount="indefinite" />
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.1;.86;1" dur="4.1s" begin="-1.8s" repeatCount="indefinite" />
     <ellipse cx="-25" rx="230" ry="75" fill="url(#pulse)" />
+    <ellipse cx="25" rx="100" ry="21" fill="url(#glint)" />
   </g>
   <g>
-    <animateMotion path="M 1025 151 C 1240 156 1510 124 1730 98" dur="6.3s" begin="-3.1s" rotate="auto" repeatCount="indefinite" />
-    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.13;.82;1" dur="6.3s" begin="-3.1s" repeatCount="indefinite" />
+    <animateMotion path="M 1025 151 C 1240 156 1510 124 1730 98" dur="4.7s" begin="-3.1s" rotate="auto" repeatCount="indefinite" />
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.1;.86;1" dur="4.7s" begin="-3.1s" repeatCount="indefinite" />
     <ellipse cx="-25" rx="235" ry="64" fill="url(#pulse)" />
+    <ellipse cx="25" rx="100" ry="21" fill="url(#glint)" />
   </g>
   <g>
-    <animateMotion path="M 742 886 C 981 863 1280 839 1453 829 S 1636 812 1731 791" dur="6.8s" begin="-4.3s" rotate="auto" repeatCount="indefinite" />
-    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.13;.82;1" dur="6.8s" begin="-4.3s" repeatCount="indefinite" />
+    <animateMotion path="M 742 886 C 981 863 1280 839 1453 829 S 1636 812 1731 791" dur="4.9s" begin="-4.3s" rotate="auto" repeatCount="indefinite" />
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.1;.86;1" dur="4.9s" begin="-4.3s" repeatCount="indefinite" />
     <ellipse cx="-25" rx="252" ry="75" fill="url(#pulse)" />
+    <ellipse cx="25" rx="100" ry="21" fill="url(#glint)" />
   </g>
   <g>
-    <animateMotion path="M 1738 679 C 1590 718 1517 761 1430 810 S 1221 861 1010 881" dur="6.1s" begin="-2.2s" rotate="auto" repeatCount="indefinite" />
-    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.13;.82;1" dur="6.1s" begin="-2.2s" repeatCount="indefinite" />
+    <animateMotion path="M 1738 679 C 1590 718 1517 761 1430 810 S 1221 861 1010 881" dur="5.3s" begin="-2.2s" rotate="auto" repeatCount="indefinite" />
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.1;.86;1" dur="5.3s" begin="-2.2s" repeatCount="indefinite" />
     <ellipse cx="-25" rx="220" ry="65" fill="url(#pulse)" />
+    <ellipse cx="25" rx="100" ry="21" fill="url(#glint)" />
   </g>
 </svg>

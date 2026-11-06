@@ -65,7 +65,7 @@
     inset: 0;
     pointer-events: none;
     background: var(--optical-light, none) var(--optical-position, center) / var(--optical-size, cover) no-repeat;
-    mask-image: var(--optical-base, none), var(--optical-base, none);
+    mask-image: var(--optical-mask, var(--optical-base, none), var(--optical-base, none));
     mask-mode: luminance;
     mask-repeat: no-repeat;
     mask-size: var(--optical-size, cover);
@@ -121,15 +121,16 @@
   top: max(12vh, 72px);
   bottom: max(9.75vh, calc(4vh + 64px));
   grid-template-rows: minmax(0, 1fr) auto auto;
-  row-gap: clamp(9px, 1.3vh, 17px);
+  row-gap: clamp(12px, 1.65vh, 22px);
 }
 .app.app--intro .intro-apparatus-notes {
-  width: min(100%, 390px);
-  padding: 9px 0 0;
+  width: min(100%, 410px);
+  padding: 12px 0 0;
   border-top: 1px solid #6b7e9a55;
 }
-.app.app--intro .intro-object-hint { color: #c5d4e8; gap: 7px 12px; }
-.app.app--intro .intro-vessel-tools button { color: #becce0; border-color: #7b8fab66; font-family: "SFMono-Regular", Consolas, monospace; background: #07101a60; border-radius: 0; }
+.app.app--intro .intro-object-hint { color: #c5d4e8; gap: 10px 16px; }
+.app.app--intro .intro-vessel-tools { gap: 7px; }
+.app.app--intro .intro-vessel-tools button { color: #becce0; border-color: #7b8fab66; font-family: "SFMono-Regular", Consolas, monospace; background: #07101a60; border-radius: 0; min-height: 32px; }
 .app.app--intro .intro-vessel-tools button:is(:hover, [aria-pressed="true"]) { color: #e5d8ff; background: #392b5355; border-color: #bc9df4; }
 .app.app--intro .intro-actions { left: 4.5vw; right: 34vw; bottom: 4vh; }
 .app.app--intro .intro-actions button { background: #080e1799; border-left: 1px solid #91a4c055; padding: 0 16px; color: #e1e8f4; min-height: 52px; }
@@ -139,12 +140,14 @@
 .app.app--intro .intro-actions button:nth-child(2):is(:hover, :focus-visible) { background: #112435d9; border-color: #92d7f1; }
 .app.app--intro .intro-weave-caption {
   position: static;
-  width: 100%;
+  width: min(100%, 410px);
+  justify-self: center;
   justify-content: center;
   text-align: center;
-  gap: 4px 12px;
+  gap: 5px 16px;
   color: #b2c3dc;
 }
+.app.app--intro .intro-weave-caption :is(small, span, p) { font-size: 8px; }
 
 /* Reserve console: commands under the text, a larger specimen on the right. */
 .app.app.app--idle.app--entered .idle-experience {
@@ -189,11 +192,29 @@
   background-size: var(--optical-size, cover);
   mask-image: none;
 }
-.app.app.app--time_selection:not(.app--buy) .environment-art {
+.app.app.app--time_selection .environment-art {
+  --optical-mask: var(--optical-base), var(--optical-base), var(--optical-base), var(--optical-base);
+  --edge-light: #a572f8b8;
+  --edge-reflection: #a1a0ffb3;
   opacity: 0.62;
 }
-.app.app.app--buy.app--time_selection .environment-art {
-  opacity: 0.62;
+.app.app.app--time_selection.app--buy .environment-art {
+  --edge-light: #72d9ffbc;
+  --edge-reflection: #65a7ffb3;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .app.app.app.app--time_selection .environment-art::after {
+    /* Sweep the illumination across the fixed, luminance-masked edge facets. */
+    background-image: var(--optical-light),
+      radial-gradient(ellipse closest-side, var(--edge-light), transparent),
+      radial-gradient(ellipse closest-side, var(--edge-reflection), transparent);
+    background-size: var(--optical-size, cover), 42% 29%, 54% 27%;
+    animation: edge-refraction 3.8s ease-in-out infinite alternate;
+  }
+  @keyframes edge-refraction {
+    from { background-position: var(--optical-position), 46% 0%, 108% 100%; }
+    to { background-position: var(--optical-position), 105% 5%, 40% 98%; }
+  }
 }
 .app.app.app--confirmation:not(.app--buy) .environment-art,
 .app.app.app--transaction_processing:not(.app--buy) .environment-art,
@@ -346,6 +367,15 @@
 .app.app.app--reflection:has(.reflection-steps button:nth-child(2).is-active) .environment-art { --mirror-light: #7943af50; }
 .app.app.app--reflection:has(.reflection-steps button:nth-child(3).is-active) .environment-art { --mirror-light: #267a9e42; }
 .app.app.app--reflection.app--hand-mirror .environment-art { opacity: 0.28; }
+@media (prefers-reduced-motion: no-preference) {
+  .app.app.app--reflection .environment-art::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: url("/images/timevault-reflection-aurora.svg") center / cover no-repeat;
+  }
+}
 .app.app .reflection-experience {
   grid-template-columns: minmax(230px, .8fr) minmax(360px, 1.4fr) minmax(240px, .7fr);
   grid-template-rows: minmax(0, 1fr) auto; grid-template-areas: "copy mirror panel" "steps question controls";

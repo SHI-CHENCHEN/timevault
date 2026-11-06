@@ -4,6 +4,8 @@ import { clockHandRotation } from "./clockLayout";
 import { advanceCoverInertia, coverCharge, coverGlassRadius, type CoverControlState } from "./coverInteraction";
 export type { CoverControlState } from "./coverInteraction";
 
+const CLOCK_DEPTH = 1.45;
+
 export class CoverSculpture {
   readonly group = new THREE.Group();
   private readonly vessel = new THREE.Group();
@@ -184,7 +186,7 @@ export class CoverSculpture {
     for (let index = 0; index < 60; index += 1) {
       const angle = index * Math.PI / 30;
       for (const radius of [index % 5 === 0 ? 2.48 : 2.56, 2.64]) {
-        calibrationPositions.push(Math.cos(angle) * radius + 0.1, Math.sin(angle) * radius, -1.4);
+        calibrationPositions.push(Math.cos(angle) * radius, Math.sin(angle) * radius, 0);
       }
     }
     const calibrationGeometry = new THREE.BufferGeometry();
@@ -193,7 +195,7 @@ export class CoverSculpture {
     const arcPoints: THREE.Vector3[] = [];
     for (let index = 0; index <= 96; index += 1) {
       const angle = index / 96 * Math.PI * 2;
-      arcPoints.push(new THREE.Vector3(Math.cos(angle) * 2.82 + 0.1, Math.sin(angle) * 2.82, -1.5));
+      arcPoints.push(new THREE.Vector3(Math.cos(angle) * 2.82, Math.sin(angle) * 2.82, 0));
     }
     this.chronometer.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(arcPoints), calibrationMaterial));
     for (const [length, width, color] of [[1.32, 0.022, 0xd4c7f0], [2.1, 0.015, 0xb9d7ee], [2.6, 0.007, 0xe4df94]]) {
@@ -206,10 +208,8 @@ export class CoverSculpture {
       silhouette.lineTo(width, -0.22); silhouette.closePath();
       const hand = new THREE.Mesh(new THREE.ShapeGeometry(silhouette), material);
       const spindle = new THREE.Group();
-      spindle.position.set(0.1, 0, -1.38);
       spindle.add(hand); this.clockHands.push(hand); this.chronometer.add(spindle);
     }
-    this.chronometer.position.x = -0.16;
     this.group.add(this.chronometer);
     const shadowCanvas = document.createElement("canvas"); shadowCanvas.width = shadowCanvas.height = 128;
     const context = shadowCanvas.getContext("2d")!;
@@ -288,7 +288,6 @@ export class CoverSculpture {
     this.viewWidth = width;
     this.viewHeight = height;
     this.measureReserveStage();
-    this.placeVessel();
   }
 
   measureReserveStage(): void {
@@ -298,9 +297,10 @@ export class CoverSculpture {
       this.observedStage = stage;
       if (stage) this.stageObserver.observe(stage);
     }
-    if (!stage) { this.stageBounds = null; return; }
-    const rect = stage.getBoundingClientRect();
-    this.stageBounds = { x: rect.x, y: rect.y, width: rect.width, height: rect.height };
+    const rect = stage?.getBoundingClientRect();
+    this.stageBounds = rect?.width && rect.height
+      ? { x: rect.x, y: rect.y, width: rect.width, height: rect.height }
+      : null;
     this.placeVessel();
   }
 
@@ -326,9 +326,16 @@ export class CoverSculpture {
   }
 
   update(now: number, visible: boolean, minutes: number, pointerX: number, pointerY: number, controls: CoverControlState, cover = true): void {
-    this.group.visible = visible;
-    if (!visible) return;
-    if (this.cover !== cover) { this.cover = cover; this.applyCoverFinish(cover); this.measureReserveStage(); this.placeVessel(); }
+    if (!visible) { this.group.visible = false; return; }
+    if (this.cover !== cover) {
+      this.cover = cover;
+      this.applyCoverFinish(cover);
+      this.measureReserveStage();
+    } else if (!this.group.visible || (cover && !this.observedStage?.isConnected)) {
+      this.measureReserveStage();
+    }
+    this.group.visible = !cover || this.stageBounds !== null;
+    if (!this.group.visible) return;
     this.chronometer.visible = cover;
     if (minutes !== this.reserve) {
       this.reserve = minutes;
@@ -352,6 +359,13 @@ export class CoverSculpture {
     this.grainMaterial.size = cover ? 0.019 + charge * 0.003 + pulse * 0.005 : 0.019;
     this.grainMaterial.opacity = cover ? 0.78 + charge * 0.14 : 0.78;
     if (cover) {
+      // Place the recessed dial on the same camera ray as the floating vessel's neck.
+      const depthRatio = CLOCK_DEPTH / -this.group.position.z;
+      this.chronometer.position.set(
+        this.group.position.x * depthRatio,
+        this.group.position.y * depthRatio + this.vessel.position.y * (1 + this.group.scale.y * depthRatio),
+        -CLOCK_DEPTH,
+      );
       this.dialIndicator.rotation.z = -this.flowPhase * Math.PI * 12 - controls.yaw * 0.2;
       this.energyMaterial.opacity = this.reducedMotion ? 0 : Math.min(0.85, charge * 0.4 + pulse * 0.85);
       const travel = charge > 0 ? this.flowPhase * 3 : age * 0.65;

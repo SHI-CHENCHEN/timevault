@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="941" viewBox="0 0 1672 941">
+  <defs>
+    <linearGradient id="curtain" x2=".35" y2="1">
+      <stop stop-color="#7ea4ff" stop-opacity="0" />
+      <stop offset=".44" stop-color="#7e75eb" stop-opacity=".12" />
+      <stop offset=".78" stop-color="#987bf3" stop-opacity=".34">
+        <animate attributeName="stop-color" values="#987bf3;#5c96e5;#aa77e0;#987bf3" dur="13s" repeatCount="indefinite" />
+      </stop>
+      <stop offset="1" stop-color="#8c7ee8" stop-opacity="0" />
+    </linearGradient>
+    <radialGradient id="haze">
+      <stop stop-color="#8d73e7" stop-opacity=".36">
+        <animate attributeName="stop-color" values="#8d73e7;#5185d1;#aa70c5;#8d73e7" dur="12s" repeatCount="indefinite" />
+      </stop>
+      <stop offset=".55" stop-color="#7862be" stop-opacity=".18" />
+      <stop offset="1" stop-color="#7862be" stop-opacity="0" />
+    </radialGradient>
+    <path id="fold" d="M 1110 0 C 1250 27 1460 151 1740 84 C 1500 196 1310 95 1110 0 Z">
+      <animate attributeName="d"
+        values="M 1110 0 C 1250 27 1460 151 1740 84 C 1500 196 1310 95 1110 0 Z;
+                M 1110 0 C 1300 -14 1440 206 1740 124 C 1510 259 1370 110 1110 0 Z;
+                M 1110 0 C 1250 27 1460 151 1740 84 C 1500 196 1310 95 1110 0 Z"
+        keyTimes="0;.5;1" calcMode="spline" keySplines=".42 0 .58 1;.42 0 .58 1" dur="10s" repeatCount="indefinite" />
+    </path>
+  </defs>
+  <g fill="url(#curtain)">
+    <use href="#fold" />
+    <use href="#fold" transform="translate(-138 -10) scale(1.12 1.6)" opacity=".58" />
+    <use href="#fold" transform="translate(1410 925) scale(-.88 -1.4)" opacity=".75" />
+    <use href="#fold" transform="translate(1500 953) scale(-1 -1.85)" opacity=".45" />
+  </g>
+  <g fill="url(#haze)">
+    <ellipse rx="340" ry="170">
+      <animateMotion path="M 1290 130 Q 1510 215 1610 125 Q 1520 46 1290 130" dur="14s" repeatCount="indefinite" />
+    </ellipse>
+    <ellipse rx="430" ry="146">
+      <animateMotion path="M 125 812 Q 235 755 443 824 Q 240 912 125 812" dur="16s" begin="-5s" repeatCount="indefinite" />
+    </ellipse>
+  </g>
+  <g fill="#c7b5ff">
+    <circle r="2.4">
+      <animateMotion path="M 1190 55 Q 1400 197 1720 157" dur="7s" begin="-3s" repeatCount="indefinite" />
+      <animate attributeName="opacity" values="0;.75;.55;0" keyTimes="0;.2;.75;1" dur="7s" begin="-3s" repeatCount="indefinite" />
+    </circle>
+    <circle r="1.8">
+      <animateMotion path="M -10 840 Q 215 895 544 746" dur="8s" begin="-1s" repeatCount="indefinite" />
+      <animate attributeName="opacity" values="0;.8;.5;0" keyTimes="0;.2;.75;1" dur="8s" begin="-1s" repeatCount="indefinite" />
+    </circle>
+  </g>
+</svg>
