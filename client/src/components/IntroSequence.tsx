@@ -16,7 +16,6 @@ export function IntroSequence({
 }) {
   const enterRef = useRef<HTMLButtonElement>(null);
   const wordmarkRef = useRef<HTMLButtonElement>(null);
-  const wordmarkTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const drag = useRef<{ x: number; y: number; yaw: number; pitch: number; lastX: number; lastAt: number; moved: boolean } | null>(null);
   const [paused, setPaused] = useState(coverControlRef.current.flowPaused);
   const [reversed, setReversed] = useState(coverControlRef.current.flowDirection === -1);
@@ -29,7 +28,6 @@ export function IntroSequence({
   };
   useEffect(() => () => {
     if (feedbackTimer.current) clearTimeout(feedbackTimer.current);
-    if (wordmarkTimer.current) clearTimeout(wordmarkTimer.current);
     Object.assign(coverControlRef.current, createCoverControlState());
   }, [coverControlRef]);
   const finishExploration = (cancelled = false) => {
@@ -81,19 +79,6 @@ export function IntroSequence({
     title.style.setProperty("--title-shift-x", "0px");
     title.style.setProperty("--title-shift-y", "0px");
   };
-  const illuminateWordmark = () => {
-    const title = wordmarkRef.current;
-    if (!title) return;
-    if (wordmarkTimer.current) clearTimeout(wordmarkTimer.current);
-    // Restart the light pass even when clicked again before the previous pass ends.
-    delete title.dataset.illuminated;
-    void title.offsetWidth;
-    title.dataset.illuminated = "true";
-    wordmarkTimer.current = setTimeout(() => {
-      delete title.dataset.illuminated;
-      wordmarkTimer.current = null;
-    }, 1400);
-  };
 
   return (
     <section className="intro-sequence" aria-label="TIMEVAULT introduction">
@@ -102,11 +87,10 @@ export function IntroSequence({
       </div>
 
       <button ref={wordmarkRef} type="button" className="intro-wordmark"
-        aria-label="TIMEVAULT — illuminate title" title="Move to catch the light · click to illuminate"
+        aria-label="TIMEVAULT — enter the vault" title="Enter the vault"
         onPointerMove={moveWordmark} onPointerLeave={resetWordmark} onPointerCancel={resetWordmark}
-        onPointerDown={moveWordmark} onClick={illuminateWordmark} onBlur={resetWordmark}>
-        <span className="intro-wordmark__time" aria-hidden="true"><b data-text="TIME">TIME</b></span>
-        <span className="intro-wordmark__vault" aria-hidden="true"><b data-text="VAULT">VAULT</b></span>
+        onPointerDown={moveWordmark} onClick={onEnter} onBlur={resetWordmark}>
+        <span aria-hidden="true"><b data-text="TIMEVAULT">TIMEVAULT</b></span>
       </button>
       <p className="intro-subtitle">A SPECULATIVE TIME EXCHANGE SYSTEM</p>
 

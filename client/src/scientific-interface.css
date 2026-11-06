@@ -43,14 +43,45 @@
 .app.app :is(.selection-copy p, .receipt-note, .receipt-footer > p, .outcome-copy > p, .active-time-copy > p, .archive-introduction p, .reflection-copy > p, .state-note) { color: #b7c4d7; font-size: 13px; line-height: 1.8; letter-spacing: 0.015em; }
 
 /* Cover: one horizontal identity, one measured installation, separate information bands. */
+.app.app--intro {
+  --cover-copy-lift: clamp(12px, 3.5vh, 36px);
+  --cover-optics: url("/images/timevault-quantum-chamber-v2.jpg");
+}
 .app.app.app--intro .environment-art,
 .app.app.app--intro:has(.intro-enter:hover) .environment-art,
 .app.app.app--intro:has(.intro-actions button:hover) .environment-art {
-  inset: 0; opacity: 0.85; background-image: url("/images/timevault-quantum-chamber-v2.jpg");
+  inset: 0; opacity: 0.85; background-image: var(--cover-optics);
   background-size: cover; background-position: center; background-blend-mode: normal;
-  mask-image: none; filter: none;
+  mask-image: none; filter: none; pointer-events: none;
   transform: translate3d(calc(var(--parallax-x, 0px) * 0.18), calc(var(--parallax-y, 0px) * 0.18), 0) scale(1.015);
   transition: transform 600ms ease; will-change: auto;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .app.app.app--intro .environment-art {
+    scale: 1.045;
+    animation: cover-optical-drift 18s ease-in-out infinite;
+  }
+  .app.app.app--intro .environment-art::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    mask: var(--cover-optics) luminance no-repeat;
+    mask-size: cover;
+    mask-position: inherit;
+    background: linear-gradient(124deg, transparent 39%, #938dff35 46%, #c0e2ffb3 51%, #a991ff48 55%, transparent 62%);
+    background-size: 250% 250%;
+    animation: cover-optical-light 10s linear infinite;
+  }
+}
+@keyframes cover-optical-drift {
+  0%, 100% { translate: -1vw 0.9vh; }
+  50% { translate: 1vw -0.9vh; }
+}
+@keyframes cover-optical-light {
+  0% { background-position: 100% 10%; opacity: 0; }
+  18%, 72% { opacity: 1; }
+  92%, 100% { background-position: 0% 90%; opacity: 0; }
 }
 .app.app--intro .intro-sequence::before { background: linear-gradient(90deg, #050911c9, #05091166 39%, #05091100 67%); }
 .app.app--intro .intro-sequence::after { background: none; }
@@ -58,32 +89,38 @@
 .app.app--intro .intro-link-status { top: 4.5vh; right: 4.5vw; color: #c1d0e4; }
 .app.app--intro .intro-link-status .status-dot { background: #b99af9; box-shadow: 0 0 9px #a686f144; }
 .app.app--intro .time-spine { left: 4.5vw; top: 11vh; transform: none; max-width: 34%; grid-template-columns: auto minmax(80px, 10vw) auto; animation: none; }
-.app.app.app--intro .intro-wordmark { top: 27%; left: 4.5vw; width: 49%; display: flex; flex-direction: row; gap: 0; font-size: clamp(88px, 7.3vw, 180px); line-height: 1; }
-.app.app.app--intro .intro-wordmark span b { background-image: linear-gradient(105deg, #d9c4ff, #b99af9 55%, #9ca8f3); filter: drop-shadow(0 0 16px #9366f139); background-size: 190% 100%; }
+.app.app.app--intro .intro-wordmark {
+  top: calc(27% - var(--cover-copy-lift));
+  left: 4.5vw;
+  right: auto;
+  width: max-content;
+  display: flex;
+  font-size: clamp(88px, 7.3vw, 180px);
+  line-height: 1;
+}
+.app.app.app--intro .intro-wordmark span { position: static; }
+.app.app.app--intro .intro-wordmark span b {
+  background-image: linear-gradient(101deg, #92cafa 0%, #b3d7ff 22%, #a8b5ff 48%, #b69bf5 75%, #d6b9ff 100%);
+  background-size: 100% 100%;
+  -webkit-text-stroke: 0.35px #dce4ff66;
+  filter: drop-shadow(0 2px 10px #8060dc2b);
+}
 .app.app.app--intro .intro-wordmark:is(:hover, :focus-visible) span b { filter: drop-shadow(0 0 17px #b990ff77); }
-.app.app.app--intro .intro-wordmark .intro-wordmark__time b {
-  background-image: linear-gradient(135deg, #8bacc8 0%, #e6f3ff 23%, #95b4ce 46%, #e7f6ff 65%, #84a8c9 100%);
-  -webkit-text-stroke: 0.35px #dbeeff66; filter: drop-shadow(0 2px 8px #0007);
-}
-.app.app.app--intro .intro-wordmark .intro-wordmark__vault b {
-  background-image: linear-gradient(135deg, #8b79cc 0%, #d3bbff 23%, #9980d9 46%, #dbc7ff 65%, #8f78cf 100%);
-  -webkit-text-stroke: 0.35px #dacaff66; filter: drop-shadow(0 2px 10px #8060dc2b);
-}
-.app.app--intro .intro-subtitle { left: 4.5vw; top: 42%; max-width: 40%; font-size: 10px; letter-spacing: 0.19em; padding-top: 17px; color: #c7d6e7; }
+.app.app--intro .intro-subtitle { left: 4.5vw; top: calc(42% - var(--cover-copy-lift)); max-width: 40%; font-size: 10px; letter-spacing: 0.19em; padding-top: 17px; color: #c7d6e7; }
 .app.app--intro .intro-subtitle::before { background: #a68ed0; opacity: 0.7; filter: none; }
-.app.app--intro .intro-editorial { left: 4.5vw; top: 51%; max-width: 34%; color: #dae4f1; }
+.app.app--intro .intro-editorial { left: 4.5vw; top: calc(51% - var(--cover-copy-lift)); max-width: 34%; color: #dae4f1; }
 .app.app--intro .intro-editorial > span { display: block; font: 8px "SFMono-Regular", Consolas, monospace; letter-spacing: 0.12em; color: #b3a3d2; }
 .app.app--intro .intro-editorial p { font-size: 14px; line-height: 1.85; margin-top: 18px; color: #c3cfdf; font-weight: 400; }
 .app.app--intro .intro-reserve { top: 4vh; right: 22vw; gap: 14px; color: #b2c4da; }
 .app.app--intro .intro-reserve strong { font-family: "SFMono-Regular", Consolas, monospace; color: #ecf2fa; font-size: clamp(16px, 1.3vw, 26px); }
-.app.app--intro .intro-accumulation { left: 4.5vw; top: auto; bottom: 25%; width: 290px; color: #a6b7ce; }
+.app.app--intro .intro-accumulation { left: 4.5vw; top: auto; bottom: calc(25% + var(--cover-copy-lift)); width: 290px; color: #a6b7ce; }
 .app.app--intro .intro-accumulation > span { font: 7px "SFMono-Regular", Consolas, monospace; letter-spacing: 0.14em; margin-bottom: 14px; }
 .app.app--intro .intro-accumulation b { font: 20px "SFMono-Regular", Consolas, monospace; color: #dbe4f0; }
 .app.app--intro .intro-accumulation i { font-size: 8px; color: #a6b7ce; }
-.app.app--intro .intro-composition-mark { left: calc(4.5vw + 325px); right: auto; top: auto; bottom: 25%; width: 105px; color: #a6b7ce; border-left-color: #6f819e55; }
+.app.app--intro .intro-composition-mark { left: calc(4.5vw + 325px); right: auto; top: auto; bottom: calc(25% + var(--cover-copy-lift)); width: 105px; color: #a6b7ce; border-left-color: #6f819e55; }
 .app.app--intro .intro-composition-mark strong { color: #c7b7ee; font: 24px "SFMono-Regular", Consolas, monospace; }
 .app.app--intro .intro-composition-mark p { color: #a6b7ce; }
-.app.app--intro .intro-enter { left: 4.5vw; bottom: 13.5%; min-height: 58px; width: 312px; border-radius: 2px; padding: 0 20px; color: #0e1020; background: #b99af9; border: 1px solid #cfbaff; box-shadow: 0 7px 28px #0004; }
+.app.app--intro .intro-enter { left: 4.5vw; bottom: calc(13.5% + var(--cover-copy-lift)); min-height: 58px; width: 312px; border-radius: 2px; padding: 0 20px; color: #0e1020; background: #b99af9; border: 1px solid #cfbaff; box-shadow: 0 7px 28px #0004; }
 .app.app--intro .intro-enter:hover { color: #0e1020; background: #dbcbff; border-color: #eee4ff; }
 .app.app--intro .intro-enter > span { font-size: 11px; letter-spacing: 0.12em; }
 .app.app--intro .intro-enter > span small { color: #35304d; font-size: 7px; }
@@ -319,11 +356,10 @@
   .app.app--intro .intro-actions { right: 4.5vw; }
 }
 @media (max-height: 800px) and (min-width: 821px) {
-  .app.app--intro .intro-editorial { top: 51%; }
   .app.app--intro .intro-editorial p { margin-top: 12px; font-size: 12px; }
-  .app.app--intro .intro-accumulation { bottom: 24%; }
+  .app.app--intro .intro-accumulation { bottom: calc(24% + var(--cover-copy-lift)); }
   .app.app--intro .intro-accumulation > span { display: none; }
-  .app.app--intro .intro-enter { min-height: 50px; bottom: 13%; }
+  .app.app--intro .intro-enter { min-height: 50px; bottom: calc(13% + var(--cover-copy-lift)); }
   .app.app.app--entered .selection-experience { padding-top: 128px; gap: 14px 6vw; }
   .app.app .selection-copy h1 { font-size: 34px; margin-top: 18px; }
   .app.app .selection-copy p { margin-top: 12px; }
@@ -357,6 +393,7 @@
   .app.app .active-time-clock { width: min(32vw, 34vh); }
 }
 @media (max-width: 820px) {
+  .app.app--intro { --cover-copy-lift: clamp(8px, 2vh, 16px); }
   .app.app .identity-lockup strong { font-size: 10px; }
   .app.app .concept-sequence { display: none; }
   .app.app:not(.app--intro) .environment-art { opacity: 0.21; background-position: 68% center; }
@@ -365,8 +402,8 @@
   .app.app--intro .intro-concept-line { left: 6vw; top: 4vh; font-size: 5px; gap: 6px; }
   .app.app--intro .intro-link-status { top: auto; bottom: 10px; right: 6vw; font-size: 6px; }
   .app.app--intro .time-spine { left: 6vw; top: 10%; max-width: 65%; grid-template-columns: auto 60px auto; gap: 8px; }
-  .app.app.app--intro .intro-wordmark { top: 19%; left: 6vw; width: 88%; font-size: clamp(39px, 10.5vw, 76px); }
-  .app.app--intro .intro-subtitle { top: 28%; left: 6vw; max-width: 88%; font-size: 6px; padding-top: 10px; }
+  .app.app.app--intro .intro-wordmark { top: calc(19% - var(--cover-copy-lift)); left: 6vw; font-size: clamp(39px, 10.5vw, 76px); }
+  .app.app--intro .intro-subtitle { top: calc(28% - var(--cover-copy-lift)); left: 6vw; max-width: 88%; font-size: 6px; padding-top: 10px; }
   .app.app--intro .intro-editorial, .app.app--intro .intro-accumulation, .app.app--intro .intro-composition-mark { display: none; }
   .app.app--intro .intro-reserve { top: 6.5%; right: 6vw; display: grid; padding: 0; border: 0; gap: 5px; }
   .app.app--intro .intro-reserve span { font-size: 6px; }
