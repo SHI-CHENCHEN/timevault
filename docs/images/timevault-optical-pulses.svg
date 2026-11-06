@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="941" viewBox="0 0 1672 941">
+  <defs>
+    <radialGradient id="cyan-to-violet">
+      <stop stop-color="#91f0ff">
+        <animate attributeName="stop-color" values="#91f0ff;#c291ff;#ff9cde;#91f0ff" dur="5.8s" repeatCount="indefinite" />
+      </stop>
+      <stop offset=".3" stop-color="#29dfff">
+        <animate attributeName="stop-color" values="#29dfff;#b169ff;#fa65ca;#29dfff" dur="5.8s" repeatCount="indefinite" />
+      </stop>
+      <stop offset=".72" stop-color="#628bff" stop-opacity=".68">
+        <animate attributeName="stop-color" values="#628bff;#7142f0;#e938bc;#628bff" dur="5.8s" repeatCount="indefinite" />
+      </stop>
+      <stop offset="1" stop-color="#7f78ff" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="violet-to-blue">
+      <stop stop-color="#e6b0ff">
+        <animate attributeName="stop-color" values="#e6b0ff;#ffa0df;#8cecff;#e6b0ff" dur="7.2s" repeatCount="indefinite" />
+      </stop>
+      <stop offset=".34" stop-color="#c269ff">
+        <animate attributeName="stop-color" values="#c269ff;#ff7bd7;#4bdcff;#c269ff" dur="7.2s" repeatCount="indefinite" />
+      </stop>
+      <stop offset=".7" stop-color="#8259ff" stop-opacity=".64">
+        <animate attributeName="stop-color" values="#8259ff;#df4ebf;#487fff;#8259ff" dur="7.2s" repeatCount="indefinite" />
+      </stop>
+      <stop offset="1" stop-color="#8276ff" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <!-- These paths follow the fixed top and bottom refractions in quantum-chamber-v2. -->
+  <g>
+    <animateMotion path="M 815 8 C 1080 126 1210 140 1415 79 S 1635 28 1730 0" dur="5.8s" begin="-1.4s" rotate="auto" repeatCount="indefinite" />
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.14;.8;1" dur="5.8s" begin="-1.4s" repeatCount="indefinite" />
+    <ellipse cx="-28" rx="200" ry="58" fill="url(#cyan-to-violet)" />
+  </g>
+  <g>
+    <animateMotion path="M 1235 -88 C 1290 34 1320 59 1390 101 S 1578 205 1740 334" dur="7.2s" begin="-4.1s" rotate="auto" repeatCount="indefinite" />
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.16;.82;1" dur="7.2s" begin="-4.1s" repeatCount="indefinite" />
+    <ellipse cx="-20" rx="175" ry="81" fill="url(#violet-to-blue)" />
+  </g>
+  <g>
+    <animateMotion path="M 716 967 C 917 929 1067 872 1225 832 S 1514 786 1750 722" dur="7.2s" begin="-3.2s" rotate="auto" repeatCount="indefinite" />
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.15;.84;1" dur="7.2s" begin="-3.2s" repeatCount="indefinite" />
+    <ellipse cx="-42" rx="235" ry="71" fill="url(#violet-to-blue)" />
+  </g>
+  <g>
+    <animateMotion path="M 1240 986 C 1344 853 1414 773 1517 708 S 1637 573 1740 462" dur="5.8s" begin="-2.7s" rotate="auto" repeatCount="indefinite" />
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.13;.8;1" dur="5.8s" begin="-2.7s" repeatCount="indefinite" />
+    <ellipse cx="-25" rx="195" ry="80" fill="url(#cyan-to-violet)" />
+  </g>
+</svg>

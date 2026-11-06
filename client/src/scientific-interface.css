@@ -46,42 +46,31 @@
 .app.app--intro {
   --cover-copy-lift: clamp(12px, 3.5vh, 36px);
   --cover-optics: url("/images/timevault-quantum-chamber-v2.jpg");
+  --cover-optics-position: center;
 }
 .app.app.app--intro .environment-art,
 .app.app.app--intro:has(.intro-enter:hover) .environment-art,
 .app.app.app--intro:has(.intro-actions button:hover) .environment-art {
   inset: 0; opacity: 0.85; background-image: var(--cover-optics);
-  background-size: cover; background-position: center; background-blend-mode: normal;
+  background-size: cover; background-position: var(--cover-optics-position); background-blend-mode: normal;
   mask-image: none; filter: none; pointer-events: none;
-  transform: translate3d(calc(var(--parallax-x, 0px) * 0.18), calc(var(--parallax-y, 0px) * 0.18), 0) scale(1.015);
-  transition: transform 600ms ease; will-change: auto;
+  transform: none; animation: none; transition: none; will-change: auto;
 }
 @media (prefers-reduced-motion: no-preference) {
-  .app.app.app--intro .environment-art {
-    scale: 1.045;
-    animation: cover-optical-drift 18s ease-in-out infinite;
-  }
+  /* The light paths share the artwork's dimensions and crop. Only lit glass catches the moving color. */
   .app.app.app--intro .environment-art::after {
     content: "";
     position: absolute;
     inset: 0;
     pointer-events: none;
-    mask: var(--cover-optics) luminance no-repeat;
+    background: url("/images/timevault-optical-pulses.svg") var(--cover-optics-position) / cover no-repeat;
+    mask-image: var(--cover-optics), var(--cover-optics);
+    mask-mode: luminance;
+    mask-repeat: no-repeat;
     mask-size: cover;
-    mask-position: inherit;
-    background: linear-gradient(124deg, transparent 39%, #938dff35 46%, #c0e2ffb3 51%, #a991ff48 55%, transparent 62%);
-    background-size: 250% 250%;
-    animation: cover-optical-light 10s linear infinite;
+    mask-position: var(--cover-optics-position);
+    mask-composite: add;
   }
-}
-@keyframes cover-optical-drift {
-  0%, 100% { translate: -1vw 0.9vh; }
-  50% { translate: 1vw -0.9vh; }
-}
-@keyframes cover-optical-light {
-  0% { background-position: 100% 10%; opacity: 0; }
-  18%, 72% { opacity: 1; }
-  92%, 100% { background-position: 0% 90%; opacity: 0; }
 }
 .app.app--intro .intro-sequence::before { background: linear-gradient(90deg, #050911c9, #05091166 39%, #05091100 67%); }
 .app.app--intro .intro-sequence::after { background: none; }
@@ -393,11 +382,14 @@
   .app.app .active-time-clock { width: min(32vw, 34vh); }
 }
 @media (max-width: 820px) {
-  .app.app--intro { --cover-copy-lift: clamp(8px, 2vh, 16px); }
+  .app.app--intro {
+    --cover-copy-lift: clamp(8px, 2vh, 16px);
+    --cover-optics-position: 66% center;
+  }
   .app.app .identity-lockup strong { font-size: 10px; }
   .app.app .concept-sequence { display: none; }
   .app.app:not(.app--intro) .environment-art { opacity: 0.21; background-position: 68% center; }
-  .app.app.app--intro .environment-art { opacity: 0.75; background-position: 66% center; }
+  .app.app.app--intro .environment-art { opacity: 0.75; }
   .app.app--intro .intro-sequence::before { background: linear-gradient(180deg, #060b1480, #060b1422 65%, #060b1466); }
   .app.app--intro .intro-concept-line { left: 6vw; top: 4vh; font-size: 5px; gap: 6px; }
   .app.app--intro .intro-link-status { top: auto; bottom: 10px; right: 6vw; font-size: 6px; }
@@ -461,9 +453,4 @@
   .app.app .reflection-experience blockquote { width: 100%; max-width: none; }
   .app.app .mode-experience { inset: 126px 0 56px; padding: 24px; overflow-y: auto; }
   .app.app .mode-actions { flex-direction: column; width: 100%; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .app.app.app--intro .environment-art,
-  .app.app.app--intro:has(.intro-enter:hover) .environment-art,
-  .app.app.app--intro:has(.intro-actions button:hover) .environment-art { transform: none; transition: none; }
 }
