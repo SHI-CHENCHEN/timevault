@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="941" viewBox="0 0 1672 941" fill="none">
+  <defs>
+    <linearGradient id="left-edge" x1="0" y1="760" x2="860" y2="230" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4e95bb" stop-opacity=".06"/>
+      <stop offset=".32" stop-color="#8175cb" stop-opacity=".53"/>
+      <stop offset=".69" stop-color="#9d83db" stop-opacity=".22"/>
+      <stop offset="1" stop-color="#59628d" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="right-edge" x1="1672" y1="120" x2="860" y2="630" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8d8ad3" stop-opacity=".14"/>
+      <stop offset=".34" stop-color="#b49de9" stop-opacity=".51"/>
+      <stop offset=".72" stop-color="#6b94be" stop-opacity=".15"/>
+      <stop offset="1" stop-color="#435673" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="ribbon" x1="0" x2="1" y1="1" y2="0">
+      <stop stop-color="#212946" stop-opacity=".12"/>
+      <stop offset=".5" stop-color="#605397" stop-opacity=".22"/>
+      <stop offset="1" stop-color="#1d2b49" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <path d="M-70 708C180 804 272 841 478 694C575 625 618 531 736 492C568 611 505 762 329 814C160 864 33 800-70 775Z" fill="url(#ribbon)"/>
+  <path d="M1730 201C1507 92 1307 128 1191 260C1092 372 1030 433 922 448C1084 379 1093 304 1209 198C1370 52 1568 110 1730 145Z" fill="url(#ribbon)"/>
+  <g stroke="url(#left-edge)">
+    <path d="M-50 693C172 800 343 821 503 657S690 470 839 469"/>
+    <path d="M-50 711C190 818 366 825 518 669S698 478 839 469"/>
+    <path d="M-50 730C187 838 376 846 538 674S700 491 839 469"/>
+    <path d="M-50 756C186 861 390 873 554 697S717 503 839 469"/>
+    <path d="M-50 792C182 897 412 897 579 719S734 519 839 469"/>
+    <path d="M-50 824C196 937 429 919 605 738S753 538 839 469"/>
+  </g>
+  <g stroke="url(#right-edge)">
+    <path d="M1722 126C1510 33 1314 80 1185 221S1004 421 848 462"/>
+    <path d="M1722 145C1505 52 1328 91 1195 233S1006 432 848 462"/>
+    <path d="M1722 168C1501 76 1331 104 1213 246S1022 438 848 462"/>
+    <path d="M1722 190C1527 104 1359 106 1226 262S1041 446 848 462"/>
+    <path d="M1722 218C1516 132 1376 129 1246 278S1057 456 848 462"/>
+    <path d="M1722 245C1514 163 1395 147 1266 294S1074 463 848 462"/>
+  </g>
+  <g stroke="#9e9bd4" stroke-opacity=".19">
+    <path d="M55 222h131l46 46h110M1588 633h-106l-65-65h-106M78 605h79l48 48h94M1549 326h-87l-48 48h-76"/>
+    <path d="M141 206v12m-6-6h12M1472 393v12m-6-6h12M260 686v12m-6-6h12M1518 592v12m-6-6h12"/>
+  </g>
+  <g fill="#c0bbec" fill-opacity=".35">
+    <circle cx="186" cy="222" r="2"/><circle cx="1417" cy="568" r="2"/>
+    <circle cx="157" cy="605" r="2"/><circle cx="1462" cy="326" r="2"/>
+  </g>
+</svg>

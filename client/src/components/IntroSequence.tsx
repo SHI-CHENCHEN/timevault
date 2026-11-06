@@ -164,11 +164,11 @@ export function IntroSequence({
         </div>
       </div>
       </div>
-      </div>
       <div className="intro-weave-caption">
         <small>EXPLORATION ONLY · NO TIME EXCHANGED</small>
         <span aria-hidden="true">FRAGMENTS BECOME A LIFE.</span>
         <p aria-hidden="true">{String(snapshot.account.fragmentCount).padStart(2, "0")} FIVE-MINUTE UNITS IN RESERVE</p>
+      </div>
       </div>
       <aside className="intro-composition-mark">
         <span>RESERVE SIGNATURE</span>

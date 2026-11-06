@@ -178,7 +178,7 @@ export class CoverSculpture {
       add(new THREE.SphereGeometry(0.018, 12, 8), this.lightMaterial, x, -0.32, 0.315, controller);
     }
 
-    const calibrationMaterial = new THREE.LineBasicMaterial({ color: 0xb8bbdf, transparent: true, opacity: 0.68 });
+    const calibrationMaterial = new THREE.LineBasicMaterial({ color: 0xc6c8ec, transparent: true, opacity: 0.84 });
     this.materials.push(calibrationMaterial);
     const calibrationPositions: number[] = [];
     for (let index = 0; index < 60; index += 1) {
@@ -209,6 +209,7 @@ export class CoverSculpture {
       spindle.position.set(0.1, 0, -1.38);
       spindle.add(hand); this.clockHands.push(hand); this.chronometer.add(spindle);
     }
+    this.chronometer.position.x = -0.16;
     this.group.add(this.chronometer);
     const shadowCanvas = document.createElement("canvas"); shadowCanvas.width = shadowCanvas.height = 128;
     const context = shadowCanvas.getContext("2d")!;
@@ -308,10 +309,13 @@ export class CoverSculpture {
       const { x, y, width, height } = this.stageBounds;
       const planeHeight = 10 * Math.tan(THREE.MathUtils.degToRad(16));
       const unitsPerPixel = planeHeight / this.viewHeight;
-      const padding = this.cover ? 24 : 48;
-      const scale = Math.max(0, Math.min((width - padding) / 3.7, (height - padding) / 4.8)) * unitsPerPixel;
+      // Fit the full clock diameter and the rotating controller within the cover's stage.
+      const scale = this.cover
+        ? Math.max(0, Math.min((width - 20) / 5.5, (height - 26) / 5.35)) * unitsPerPixel
+        : Math.max(0, Math.min((width - 48) / 3.7, (height - 48) / 4.8)) * unitsPerPixel;
       this.group.scale.setScalar(scale);
-      this.group.position.set(((x + width / 2) / this.viewWidth - 0.5) * planeHeight * this.aspect - scale * 0.36,
+      const horizontalOffset = this.cover ? 0.08 : 0.36;
+      this.group.position.set(((x + width / 2) / this.viewWidth - 0.5) * planeHeight * this.aspect - scale * horizontalOffset,
         (0.5 - (y + height / 2) / this.viewHeight) * planeHeight, -5);
       return;
     }
